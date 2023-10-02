@@ -1,0 +1,6 @@
+spring:
+  application.name: test-auth-system
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: test_pass
