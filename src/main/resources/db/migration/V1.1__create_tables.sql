@@ -1,6 +1,3 @@
-DROP TABLE IF EXISTS auth_system.users;
-DROP TABLE IF EXISTS auth_system.roles;
-
 CREATE TABLE IF NOT EXISTS auth_system.roles (
         ID serial PRIMARY KEY,
         NAME VARCHAR(100) UNIQUE NOT NULL,
@@ -10,13 +7,12 @@ CREATE TABLE IF NOT EXISTS auth_system.roles (
 
 CREATE TABLE IF NOT EXISTS auth_system.users (
         ID serial PRIMARY KEY,
-        LOGIN VARCHAR(100) NOT NULL,
-        EMAIL VARCHAR(100) NOT NULL,
+        LOGIN VARCHAR(100) UNIQUE NOT NULL,
+        EMAIL VARCHAR(100) UNIQUE NOT NULL,
         PASSWORD_HASH VARCHAR(500) NOT NULL,
         REGISTRATION_TIMESTAMP TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
         BIRTHDAY DATE,
         ROLE_ID INT NOT NULL,
         FOREIGN KEY (ROLE_ID)
-            REFERENCES auth_system.roles (id),
-        UNIQUE (LOGIN, EMAIL)
+            REFERENCES auth_system.roles (id)
 );

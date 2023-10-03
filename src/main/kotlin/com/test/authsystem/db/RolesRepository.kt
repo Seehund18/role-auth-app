@@ -1,11 +1,11 @@
 package com.test.authsystem.db
 
-import com.test.authsystem.model.db.Role
+import com.test.authsystem.model.db.RoleEntity
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface RolesRepository: CrudRepository<Role, Int> {
+interface RolesRepository: CrudRepository<RoleEntity, Long> {
 
-    fun findByName(roleName: String): Role
+    fun findByNameIgnoreCase(roleName: String): RoleEntity
 }
