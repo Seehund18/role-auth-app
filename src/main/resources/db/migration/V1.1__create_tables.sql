@@ -5,14 +5,22 @@ CREATE TABLE IF NOT EXISTS auth_system.roles (
         PRIORITY_VALUE INT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS auth_system.passwords (
+        ID serial PRIMARY KEY,
+        PASSWORD_HASH BYTEA NOT NULL,
+        SALT BYTEA NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS auth_system.users (
         ID serial PRIMARY KEY,
         LOGIN VARCHAR(100) UNIQUE NOT NULL,
         EMAIL VARCHAR(100) UNIQUE NOT NULL,
-        PASSWORD_HASH VARCHAR(500) NOT NULL,
         REGISTRATION_TIMESTAMP TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
         BIRTHDAY DATE,
-        ROLE_ID INT NOT NULL,
+        ROLE_ID BIGINT NOT NULL,
+        PASSWORD_ID BIGINT NOT NULL,
         FOREIGN KEY (ROLE_ID)
-            REFERENCES auth_system.roles (id)
+            REFERENCES auth_system.roles (id),
+        FOREIGN KEY (PASSWORD_ID)
+            REFERENCES auth_system.passwords (id)
 );

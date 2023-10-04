@@ -8,3 +8,9 @@ spring:
     show-sql: true
   flyway:
     schemas: auth_system
+
+password-generator:
+  pbkdf2:
+    iteration-count: 65536
+    key-length: 512
+    salt-length: 64
