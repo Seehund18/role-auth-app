@@ -11,4 +11,6 @@ interface RolesRepository: CrudRepository<RoleEntity, Long> {
 
     @Cacheable(cacheNames = ["persistedRole"], key="#roleName")
     fun findByNameIgnoreCase(roleName: String): RoleEntity
+
+    fun findByPriorityValueLessThanEqual(priorityValue: Int): List<RoleEntity>
 }

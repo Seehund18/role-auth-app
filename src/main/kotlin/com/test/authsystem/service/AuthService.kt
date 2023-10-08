@@ -1,6 +1,6 @@
 package com.test.authsystem.service
 
-import com.test.authsystem.constants.DefaultRoles
+import com.test.authsystem.constants.SystemRoles
 import com.test.authsystem.db.RolesRepository
 import com.test.authsystem.db.UsersRepository
 import com.test.authsystem.exception.SignInException
@@ -33,7 +33,7 @@ class AuthService(private val rolesRepo: RolesRepository,
         val (hashedPass, salt)  = passHashingService.generateHashedPassAndSalt(createUserRequest.password)
         val passwordEntity = PasswordEntity(passwordHash = hashedPass, salt = salt)
 
-        val defaultRole = rolesRepo.findByNameIgnoreCase(DefaultRoles.USER.name)
+        val defaultRole = rolesRepo.findByNameIgnoreCase(SystemRoles.USER.name)
         var userEntity = UserEntity(login = createUserRequest.login,
             email = createUserRequest.email,
             registrationTimestamp = LocalDateTime.now(),

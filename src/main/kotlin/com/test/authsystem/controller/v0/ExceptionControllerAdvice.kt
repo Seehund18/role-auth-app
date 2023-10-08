@@ -1,8 +1,12 @@
 package com.test.authsystem.controller.v0
 
+import com.test.authsystem.constants.SystemResponseStatus
+import com.test.authsystem.exception.AuthException
 import com.test.authsystem.exception.DuplicateException
+import com.test.authsystem.exception.JwtTokenException
+import com.test.authsystem.exception.NotEnoughPermissionsException
 import com.test.authsystem.exception.SignInException
-import com.test.authsystem.model.api.UserResponse
+import com.test.authsystem.model.api.StatusResponse
 import jakarta.servlet.http.HttpServletRequest
 import mu.KLogger
 import mu.KotlinLogging
@@ -20,55 +24,70 @@ import org.springframework.web.bind.annotation.ResponseStatus
 @ControllerAdvice
 class ExceptionControllerAdvice(val log: KLogger = KotlinLogging.logger {}) {
 
-    private val failedStatus: String = "FAILED"
-
     @ResponseBody
     @ResponseStatus(value= HttpStatus.CONFLICT)
     @ExceptionHandler(DuplicateException::class)
-    fun handleDuplicateException(req: HttpServletRequest, ex: DuplicateException): UserResponse {
+    fun handleDuplicateException(req: HttpServletRequest, ex: DuplicateException): StatusResponse {
         log.error("Duplication Error: ", ex)
-        return UserResponse(status = failedStatus, description = ex.message)
+        return StatusResponse(status = SystemResponseStatus.FAILED.name, description = ex.message)
     }
 
     @ResponseBody
     @ResponseStatus(value= HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun handleValidationException(req: HttpServletRequest, ex: MethodArgumentNotValidException): UserResponse {
+    fun handleValidationException(req: HttpServletRequest, ex: MethodArgumentNotValidException): StatusResponse {
         log.error("Validation Error: ", ex)
 
         val fieldErrorMsg = ex.fieldErrors.map { fieldError -> fieldError.defaultMessage }
             .sortedBy { str -> str }
             .joinToString(", ")
 
-        return UserResponse(status = failedStatus, description = fieldErrorMsg)
+        return StatusResponse(status = SystemResponseStatus.FAILED.name, description = fieldErrorMsg)
     }
 
     @ResponseBody
     @ResponseStatus(value= HttpStatus.BAD_REQUEST)
     @ExceptionHandler(HttpMessageNotReadableException::class)
-    fun handleNotReadableException(req: HttpServletRequest, ex: HttpMessageNotReadableException): UserResponse {
+    fun handleNotReadableException(req: HttpServletRequest, ex: HttpMessageNotReadableException): StatusResponse {
         log.error("Validation Error: ", ex)
 
-        return UserResponse(status = failedStatus, description = "Error with message format")
+        return StatusResponse(status = SystemResponseStatus.FAILED.name, description = "Error with message format")
     }
 
     @ResponseBody
     @ResponseStatus(value= HttpStatus.BAD_REQUEST)
     @ExceptionHandler(SignInException::class)
-    fun handleUserNotFoundException(req: HttpServletRequest, ex: SignInException): UserResponse {
+    fun handleUserNotFoundException(req: HttpServletRequest, ex: SignInException): StatusResponse {
         log.error("Error: ", ex)
 
-        return UserResponse(status = failedStatus, description = ex.message)
+        return StatusResponse(status = SystemResponseStatus.FAILED.name, description = ex.message)
+    }
+
+    @ResponseBody
+    @ResponseStatus(value= HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(AuthException::class, JwtTokenException::class)
+    fun handleAuthExceptions(req: HttpServletRequest, ex: Exception): StatusResponse {
+        log.error("Authorization exception: ", ex)
+
+        return StatusResponse(status = SystemResponseStatus.FAILED.name, description = ex.message)
+    }
+
+    @ResponseBody
+    @ResponseStatus(value= HttpStatus.FORBIDDEN)
+    @ExceptionHandler(NotEnoughPermissionsException::class)
+    fun handleRuntimeException(req: HttpServletRequest, ex: NotEnoughPermissionsException): StatusResponse {
+        log.error("User doesn't have necessary permissions: ", ex)
+
+        return StatusResponse(status = SystemResponseStatus.FAILED.name, description = ex.message)
     }
 
     @ResponseBody
     @ResponseStatus(value= HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception::class)
-    fun handleRuntimeException(req: HttpServletRequest, ex: Exception): UserResponse {
+    fun handleException(req: HttpServletRequest, ex: Exception): StatusResponse {
         log.error("Error: ", ex)
 
-        return UserResponse(status = failedStatus, description = "Internal system error")
+        return StatusResponse(status = SystemResponseStatus.FAILED.name, description = "Internal system error")
     }
-
 
 }
