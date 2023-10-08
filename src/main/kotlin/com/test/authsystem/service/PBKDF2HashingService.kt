@@ -19,11 +19,17 @@ class PBKDF2HashingService(var configProps: PBKDF2HashingProps): PassHashingServ
         val salt = ByteArray(configProps.saltLength)
         random.nextBytes(salt)
 
-        val spec: KeySpec = PBEKeySpec(passBytes, salt, configProps.iterationCount, configProps.keyLength)
-        val factory = SecretKeyFactory.getInstance(algorithmName)
-
-        val hashedPass = factory.generateSecret(spec).encoded
+        val hashedPass = generateHashedPassWithSalt(passBytes, salt)
 
         return hashedPass to salt
     }
+
+    override fun generateHashedPassWithSalt(passBytes: CharArray, salt: ByteArray) : ByteArray {
+        val spec: KeySpec = PBEKeySpec(passBytes, salt, configProps.iterationCount, configProps.keyLength)
+        val factory = SecretKeyFactory.getInstance(algorithmName)
+
+        return factory.generateSecret(spec).encoded
+    }
+
+
 }

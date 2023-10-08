@@ -10,7 +10,9 @@ import jakarta.persistence.Table
 
 @Entity
 @Table(name = "roles", schema = "auth_system")
-data class RoleEntity(@Id @GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long?,
-                      @Column(nullable = false) var name: String,
-                      @Column(nullable = true) var description: String?,
-                      @Column(nullable = false) var priorityValue: Int)
+class RoleEntity(
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long?,
+    @Column(nullable = false) var name: String,
+    @Column(nullable = true) var description: String?,
+    @Column(nullable = false) var priorityValue: Int
+)

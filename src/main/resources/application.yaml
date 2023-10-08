@@ -14,3 +14,9 @@ password-generator:
     iteration-count: 65536
     key-length: 512
     salt-length: 64
+
+jwt:
+  token:
+    issuer: auth-system
+    lifespan: 3d
+    secret: vBfJh8HGEm1rbFQW50vOv5LpGoVlfV1gn4MPEnYlE7wJvlWuVc0H7iHkjC2O7wnziEdpkiEWwhuV9ls3fqL3hS75estTlkdNEEXK

@@ -1,6 +1,7 @@
 package com.test.authsystem.controller.v0
 
 import com.test.authsystem.exception.DuplicateException
+import com.test.authsystem.exception.SignInException
 import com.test.authsystem.model.api.UserResponse
 import jakarta.servlet.http.HttpServletRequest
 import mu.KLogger
@@ -49,6 +50,24 @@ class ExceptionControllerAdvice(val log: KLogger = KotlinLogging.logger {}) {
         log.error("Validation Error: ", ex)
 
         return UserResponse(status = failedStatus, description = "Error with message format")
+    }
+
+    @ResponseBody
+    @ResponseStatus(value= HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(SignInException::class)
+    fun handleUserNotFoundException(req: HttpServletRequest, ex: SignInException): UserResponse {
+        log.error("Error: ", ex)
+
+        return UserResponse(status = failedStatus, description = ex.message)
+    }
+
+    @ResponseBody
+    @ResponseStatus(value= HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(Exception::class)
+    fun handleRuntimeException(req: HttpServletRequest, ex: Exception): UserResponse {
+        log.error("Error: ", ex)
+
+        return UserResponse(status = failedStatus, description = "Internal system error")
     }
 
 

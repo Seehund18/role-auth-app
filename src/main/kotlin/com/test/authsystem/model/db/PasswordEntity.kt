@@ -9,6 +9,8 @@ import jakarta.persistence.Table
 
 @Entity
 @Table(name = "passwords", schema = "auth_system")
-data class PasswordEntity(@Id @GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
-                          @Column(nullable = false) var passwordHash: ByteArray,
-                          @Column(nullable = true) var salt: ByteArray)
+class PasswordEntity(
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
+    @Column(nullable = false) var passwordHash: ByteArray,
+    @Column(nullable = true) var salt: ByteArray
+)
