@@ -2,21 +2,24 @@ package com.test.authsystem.controller.v0
 
 import com.test.authsystem.model.api.AuthRequest
 import com.test.authsystem.model.api.AuthResponse
+import com.test.authsystem.model.api.ChangePassRequest
 import com.test.authsystem.model.api.CreateUserRequest
 import com.test.authsystem.model.api.UserResponse
 import com.test.authsystem.service.AuthService
 import jakarta.validation.Valid
 import mu.KLogger
 import mu.KotlinLogging
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/v0/users")
-class UsersController(var authService: AuthService,
-                      val log: KLogger = KotlinLogging.logger {}) {
+class UsersAuthController(var authService: AuthService,
+                          val log: KLogger = KotlinLogging.logger {}) {
 
     private val successStatus: String = "SUCCESS"
 
@@ -25,7 +28,6 @@ class UsersController(var authService: AuthService,
         log.info { "Processing request for adding a new user: ${createUserRequest.login}" }
 
         authService.signUpNewUser(createUserRequest)
-
 
         return UserResponse(status = successStatus, description = "User has been successfully created")
     }
@@ -37,5 +39,14 @@ class UsersController(var authService: AuthService,
         val (jwtToken, expirationDate) = authService.signInUser(authRequest)
 
         return AuthResponse(successStatus, jwtToken, expirationDate)
+    }
+
+    @PostMapping("/{user}/password")
+    fun changePassword(@PathVariable("user") login: String, @RequestBody changeRequest: ChangePassRequest): UserResponse {
+        log.info { "Processing change password request for user $login" }
+
+        authService.changePassword(login, changeRequest)
+
+        return UserResponse(status = successStatus, description = "Password has been changed")
     }
 }

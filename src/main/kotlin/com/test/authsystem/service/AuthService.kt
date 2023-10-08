@@ -6,6 +6,7 @@ import com.test.authsystem.db.UsersRepository
 import com.test.authsystem.exception.SignInException
 import com.test.authsystem.exception.DuplicateException
 import com.test.authsystem.model.api.AuthRequest
+import com.test.authsystem.model.api.ChangePassRequest
 import com.test.authsystem.model.api.CreateUserRequest
 import com.test.authsystem.model.db.PasswordEntity
 import com.test.authsystem.model.db.UserEntity
@@ -50,16 +51,34 @@ class AuthService(private val rolesRepo: RolesRepository,
         val user = usersRepo.findByLogin(authRequest.login) ?:
             throw SignInException("User with given login doesn't exist")
 
-        if (!checkUserPassword(authRequest, user)) {
+        if (!checkUserPassword(authRequest.password, user)) {
             throw SignInException("Wrong password")
         }
 
         return jwtTokenProvider.generateJwtToken(user);
     }
 
-    private fun checkUserPassword(authRequest: AuthRequest, user: UserEntity): Boolean {
-        val generatedPass = passHashingService.generateHashedPassWithSalt(authRequest.password,
-            user.passwordEntity.salt)
+    @Transactional
+    fun changePassword(login: String, changePassRequest: ChangePassRequest): UserEntity {
+        var user = usersRepo.findByLogin(login) ?:
+            throw SignInException("User with given login doesn't exist")
+
+        if (!checkUserPassword(changePassRequest.oldPass, user)) {
+            throw SignInException("Wrong password")
+        }
+
+        val (hashedPass, salt)  = passHashingService.generateHashedPassAndSalt(changePassRequest.newPass)
+        val passwordEntity = PasswordEntity(passwordHash = hashedPass, salt = salt)
+        user.passwordEntity = passwordEntity
+
+        user = usersRepo.save(user)
+
+        log.info { "Password has been updated for $login" }
+        return user
+    }
+
+    private fun checkUserPassword(password: CharArray, user: UserEntity): Boolean {
+        val generatedPass = passHashingService.generateHashedPassWithSalt(password, user.passwordEntity.salt)
         return user.passwordEntity.passwordHash.contentEquals(generatedPass)
     }
 
