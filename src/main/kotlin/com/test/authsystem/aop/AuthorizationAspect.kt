@@ -4,7 +4,8 @@ import com.test.authsystem.constants.AuthClaims
 import com.test.authsystem.db.RolesRepository
 import com.test.authsystem.exception.AuthException
 import com.test.authsystem.exception.NotEnoughPermissionsException
-import com.test.authsystem.service.JwtTokenProvider
+import com.test.authsystem.service.JwtTokenHandler
+import com.test.authsystem.util.extractJwtTokenFromHeader
 import mu.KLogger
 import mu.KotlinLogging
 import org.aspectj.lang.JoinPoint
@@ -20,11 +21,9 @@ import org.springframework.web.context.request.ServletRequestAttributes
 @Component
 class AuthorizationAspect(
     val rolesRepo: RolesRepository,
-    val jwtTokenProvider: JwtTokenProvider,
+    val jwtTokenHandler: JwtTokenHandler,
     val log: KLogger = KotlinLogging.logger {}
 ) {
-
-    private val bearerTokenRegex = Regex("Bearer (.*)")
 
     @Before("@annotation(authorized)")
     @Throws(Throwable::class)
@@ -32,10 +31,8 @@ class AuthorizationAspect(
         log.info { "Authorizing request" }
         val minRequiredRole = authorized.minRole
 
-        val jwtToken = extractJwtTokenFromHeader();
-        val jwtRole = jwtTokenProvider.parseJwt(jwtToken)
-            .body[AuthClaims.ROLE.claimName]
-            .toString()
+        val jwtToken = extractJwtTokenFromHeader(getAuthHeader());
+        val jwtRole = jwtTokenHandler.getClaimFromToken(AuthClaims.ROLE, jwtToken)
 
         val minRequiredRoleEntity = rolesRepo.findByNameIgnoreCase(minRequiredRole.name)
         val jwtRoleCorrect = rolesRepo.findByPriorityValueLessThanEqual(minRequiredRoleEntity.priorityValue)
@@ -47,17 +44,14 @@ class AuthorizationAspect(
         }
     }
 
-    private fun extractJwtTokenFromHeader(): String {
+    private fun getAuthHeader() : String {
         val attributes: RequestAttributes? = RequestContextHolder.getRequestAttributes()
-        var header: String = ""
+        var authHeader : String? = null
         if (attributes is ServletRequestAttributes) {
-            header = attributes.request.getHeader(HttpHeaders.AUTHORIZATION)
-                ?: throw AuthException("No authorization header in the request")
+            authHeader = attributes.request.getHeader(HttpHeaders.AUTHORIZATION)
         }
-        return getTokenFromHeader(header) ?: throw AuthException("No authorization token in the request")
+        return authHeader ?: throw AuthException("No authorization header in the request")
     }
 
-    private fun getTokenFromHeader(header: String): String? {
-        return bearerTokenRegex.find(header)?.groups?.get(1)?.value.toString()
-    }
+
 }

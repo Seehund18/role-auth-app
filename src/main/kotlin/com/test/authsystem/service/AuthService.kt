@@ -14,14 +14,13 @@ import jakarta.transaction.Transactional
 import mu.KLogger
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Service
 class AuthService(private val rolesRepo: RolesRepository,
                   private val usersRepo: UsersRepository,
                   private val passHashingService: PBKDF2HashingService,
-                  private val jwtTokenProvider: JwtTokenProvider,
+                  private val jwtTokenHandler: JwtTokenHandler,
                   private val log: KLogger = KotlinLogging.logger {}) {
 
     @Transactional
@@ -47,7 +46,7 @@ class AuthService(private val rolesRepo: RolesRepository,
     }
 
     @Transactional
-    fun signInUser(authRequest: AuthRequest): Pair<String, LocalDate> {
+    fun signInUser(authRequest: AuthRequest): Pair<String, LocalDateTime> {
         val user = usersRepo.findByLogin(authRequest.login) ?:
             throw SignInException("User with given login doesn't exist")
 
@@ -55,7 +54,7 @@ class AuthService(private val rolesRepo: RolesRepository,
             throw SignInException("Wrong password")
         }
 
-        return jwtTokenProvider.generateJwtToken(user);
+        return jwtTokenHandler.generateJwtToken(user);
     }
 
     @Transactional

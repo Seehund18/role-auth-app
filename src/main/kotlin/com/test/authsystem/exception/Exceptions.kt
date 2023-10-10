@@ -9,3 +9,5 @@ class AuthException(message: String) : RuntimeException(message)
 class JwtTokenException(message: String?, cause: Throwable?) : RuntimeException(message, cause)
 
 class NotEnoughPermissionsException(message: String) : RuntimeException(message)
+
+class UsersDontMatchException(message: String) : RuntimeException(message)

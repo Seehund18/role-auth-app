@@ -1,7 +1,8 @@
 package com.test.authsystem.model.api
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class AuthResponse(val status: String,
                         val jwtToken: String,
-                        val expirationDate: LocalDate)
+                        val expirationDate: LocalDateTime
+)

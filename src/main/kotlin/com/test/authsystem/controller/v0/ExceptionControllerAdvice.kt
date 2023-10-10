@@ -6,6 +6,7 @@ import com.test.authsystem.exception.DuplicateException
 import com.test.authsystem.exception.JwtTokenException
 import com.test.authsystem.exception.NotEnoughPermissionsException
 import com.test.authsystem.exception.SignInException
+import com.test.authsystem.exception.UsersDontMatchException
 import com.test.authsystem.model.api.StatusResponse
 import jakarta.servlet.http.HttpServletRequest
 import mu.KLogger
@@ -15,6 +16,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingRequestHeaderException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseBody
@@ -65,19 +67,17 @@ class ExceptionControllerAdvice(val log: KLogger = KotlinLogging.logger {}) {
 
     @ResponseBody
     @ResponseStatus(value= HttpStatus.UNAUTHORIZED)
-    @ExceptionHandler(AuthException::class, JwtTokenException::class)
+    @ExceptionHandler(AuthException::class, JwtTokenException::class, MissingRequestHeaderException::class)
     fun handleAuthExceptions(req: HttpServletRequest, ex: Exception): StatusResponse {
         log.error("Authorization exception: ", ex)
-
         return StatusResponse(status = SystemResponseStatus.FAILED.name, description = ex.message)
     }
 
     @ResponseBody
     @ResponseStatus(value= HttpStatus.FORBIDDEN)
-    @ExceptionHandler(NotEnoughPermissionsException::class)
-    fun handleRuntimeException(req: HttpServletRequest, ex: NotEnoughPermissionsException): StatusResponse {
+    @ExceptionHandler(NotEnoughPermissionsException::class, UsersDontMatchException::class)
+    fun handleRuntimeException(req: HttpServletRequest, ex: Exception): StatusResponse {
         log.error("User doesn't have necessary permissions: ", ex)
-
         return StatusResponse(status = SystemResponseStatus.FAILED.name, description = ex.message)
     }
 
@@ -86,7 +86,6 @@ class ExceptionControllerAdvice(val log: KLogger = KotlinLogging.logger {}) {
     @ExceptionHandler(Exception::class)
     fun handleException(req: HttpServletRequest, ex: Exception): StatusResponse {
         log.error("Error: ", ex)
-
         return StatusResponse(status = SystemResponseStatus.FAILED.name, description = "Internal system error")
     }
 

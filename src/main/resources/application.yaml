@@ -18,5 +18,5 @@ password-generator:
 jwt:
   token:
     issuer: auth-system
-    lifespan: 3d
+    lifespan: 10m
     secret: vBfJh8HGEm1rbFQW50vOv5LpGoVlfV1gn4MPEnYlE7wJvlWuVc0H7iHkjC2O7wnziEdpkiEWwhuV9ls3fqL3hS75estTlkdNEEXK
