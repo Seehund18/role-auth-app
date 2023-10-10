@@ -17,28 +17,33 @@ import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
 @Service
-class AuthService(private val rolesRepo: RolesRepository,
-                  private val usersRepo: UsersRepository,
-                  private val passHashingService: PBKDF2HashingService,
-                  private val jwtTokenHandler: JwtTokenHandler,
-                  private val log: KLogger = KotlinLogging.logger {}) {
+class AuthService(
+    private val rolesRepo: RolesRepository,
+    private val usersRepo: UsersRepository,
+    private val passHashingService: PBKDF2HashingService,
+    private val jwtTokenHandler: JwtTokenHandler,
+    private val log: KLogger = KotlinLogging.logger {},
+    private val defaultRole : SystemRoles = SystemRoles.USER
+) {
 
     @Transactional
-    fun signUpNewUser(createUserRequest: CreateUserRequest) : UserEntity {
+    fun signUpNewUser(createUserRequest: CreateUserRequest): UserEntity {
         if (usersRepo.existsByLoginIgnoreCaseOrEmail(createUserRequest.login, createUserRequest.email)) {
             throw DuplicateException("User with such login or email already exists")
         }
 
-        val (hashedPass, salt)  = passHashingService.generateHashedPassAndSalt(createUserRequest.password)
+        val (hashedPass, salt) = passHashingService.generateHashedPassAndSalt(createUserRequest.password)
         val passwordEntity = PasswordEntity(passwordHash = hashedPass, salt = salt)
 
-        val defaultRole = rolesRepo.findByNameIgnoreCase(SystemRoles.USER.name)
-        var userEntity = UserEntity(login = createUserRequest.login,
+        val defaultRole = rolesRepo.findByNameIgnoreCase(defaultRole.name) ?: throw RuntimeException("$defaultRole role wasn't found")
+        var userEntity = UserEntity(
+            login = createUserRequest.login,
             email = createUserRequest.email,
             registrationTimestamp = LocalDateTime.now(),
             birthday = createUserRequest.birthday,
             role = defaultRole,
-            passwordEntity = passwordEntity)
+            passwordEntity = passwordEntity
+        )
         userEntity = usersRepo.save(userEntity)
 
         log.info { "New user ${createUserRequest.login} has been saved" }
@@ -47,8 +52,8 @@ class AuthService(private val rolesRepo: RolesRepository,
 
     @Transactional
     fun signInUser(authRequest: AuthRequest): Pair<String, LocalDateTime> {
-        val user = usersRepo.findByLogin(authRequest.login) ?:
-            throw SignInException("User with given login doesn't exist")
+        val user =
+            usersRepo.findByLoginIgnoreCase(authRequest.login) ?: throw SignInException("User with given login doesn't exist")
 
         if (!checkUserPassword(authRequest.password, user)) {
             throw SignInException("Wrong password")
@@ -59,14 +64,13 @@ class AuthService(private val rolesRepo: RolesRepository,
 
     @Transactional
     fun changePassword(login: String, changePassRequest: ChangePassRequest): UserEntity {
-        var user = usersRepo.findByLogin(login) ?:
-            throw SignInException("User with given login doesn't exist")
+        var user = usersRepo.findByLoginIgnoreCase(login) ?: throw SignInException("User with given login doesn't exist")
 
         if (!checkUserPassword(changePassRequest.oldPass, user)) {
             throw SignInException("Wrong password")
         }
 
-        val (hashedPass, salt)  = passHashingService.generateHashedPassAndSalt(changePassRequest.newPass)
+        val (hashedPass, salt) = passHashingService.generateHashedPassAndSalt(changePassRequest.newPass)
         val passwordEntity = PasswordEntity(passwordHash = hashedPass, salt = salt)
         user.passwordEntity = passwordEntity
 

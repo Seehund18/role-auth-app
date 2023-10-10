@@ -34,7 +34,7 @@ class AuthorizationAspect(
         val jwtToken = extractJwtTokenFromHeader(getAuthHeader());
         val jwtRole = jwtTokenHandler.getClaimFromToken(AuthClaims.ROLE, jwtToken)
 
-        val minRequiredRoleEntity = rolesRepo.findByNameIgnoreCase(minRequiredRole.name)
+        val minRequiredRoleEntity = rolesRepo.findByNameIgnoreCase(minRequiredRole.name) ?: throw RuntimeException("$minRequiredRole wasn't found")
         val jwtRoleCorrect = rolesRepo.findByPriorityValueLessThanEqual(minRequiredRoleEntity.priorityValue)
             .map { roleEntity -> roleEntity.name.lowercase() }
             .contains(jwtRole.lowercase())

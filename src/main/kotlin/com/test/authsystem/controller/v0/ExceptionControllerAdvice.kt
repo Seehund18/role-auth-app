@@ -58,8 +58,8 @@ class ExceptionControllerAdvice(val log: KLogger = KotlinLogging.logger {}) {
 
     @ResponseBody
     @ResponseStatus(value= HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(SignInException::class)
-    fun handleUserNotFoundException(req: HttpServletRequest, ex: SignInException): StatusResponse {
+    @ExceptionHandler(SignInException::class, NoSuchElementException::class)
+    fun handleUserNotFoundException(req: HttpServletRequest, ex: Exception): StatusResponse {
         log.error("Error: ", ex)
 
         return StatusResponse(status = SystemResponseStatus.FAILED.name, description = ex.message)

@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository
 interface UsersRepository: CrudRepository <UserEntity, Long> {
 
     fun existsByLoginIgnoreCaseOrEmail(login: String, email: String): Boolean
-    fun findByLogin(name: String): UserEntity?
+    fun findByLoginIgnoreCase(name: String): UserEntity?
 }
