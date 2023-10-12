@@ -15,7 +15,6 @@ class PBKDF2HashingService(var configProps: PBKDF2HashingProps): PassHashingServ
     private val algorithmName: String = "PBKDF2WithHmacSHA1"
 
     override fun generateHashedPassAndSalt(passBytes: CharArray): Pair<ByteArray, ByteArray> {
-
         val salt = ByteArray(configProps.saltLength)
         random.nextBytes(salt)
 
