@@ -5,7 +5,7 @@ import com.test.authsystem.exception.AuthException
 import com.test.authsystem.exception.DuplicateException
 import com.test.authsystem.exception.JwtTokenException
 import com.test.authsystem.exception.NotEnoughPermissionsException
-import com.test.authsystem.exception.SignInException
+import com.test.authsystem.exception.PassDoesntMatchException
 import com.test.authsystem.exception.UsersDontMatchException
 import com.test.authsystem.model.api.StatusResponse
 import jakarta.servlet.http.HttpServletRequest
@@ -58,7 +58,7 @@ class ExceptionControllerAdvice(val log: KLogger = KotlinLogging.logger {}) {
 
     @ResponseBody
     @ResponseStatus(value= HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(SignInException::class, NoSuchElementException::class)
+    @ExceptionHandler(PassDoesntMatchException::class, NoSuchElementException::class)
     fun handleUserNotFoundException(req: HttpServletRequest, ex: Exception): StatusResponse {
         log.error("Error: ", ex)
 

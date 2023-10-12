@@ -3,8 +3,8 @@ package com.test.authsystem.service
 import com.test.authsystem.constants.SystemRoles
 import com.test.authsystem.db.RolesRepository
 import com.test.authsystem.db.UsersRepository
-import com.test.authsystem.exception.SignInException
 import com.test.authsystem.exception.DuplicateException
+import com.test.authsystem.exception.PassDoesntMatchException
 import com.test.authsystem.model.api.AuthRequest
 import com.test.authsystem.model.api.ChangePassRequest
 import com.test.authsystem.model.api.CreateUserRequest
@@ -20,11 +20,12 @@ import java.time.LocalDateTime
 class AuthService(
     private val rolesRepo: RolesRepository,
     private val usersRepo: UsersRepository,
-    private val passHashingService: PBKDF2HashingService,
-    private val jwtTokenHandler: JwtTokenHandler,
-    private val log: KLogger = KotlinLogging.logger {},
-    private val defaultRole : SystemRoles = SystemRoles.USER
+    private val passHashingService: PassHashingService,
+    private val jwtTokenHandler: JwtTokenHandler
 ) {
+
+    private val log: KLogger = KotlinLogging.logger {}
+    private val defaultRole : SystemRoles = SystemRoles.USER
 
     @Transactional
     fun signUpNewUser(createUserRequest: CreateUserRequest): UserEntity {
@@ -53,10 +54,10 @@ class AuthService(
     @Transactional
     fun signInUser(authRequest: AuthRequest): Pair<String, LocalDateTime> {
         val user =
-            usersRepo.findByLoginIgnoreCase(authRequest.login) ?: throw SignInException("User with given login doesn't exist")
+            usersRepo.findByLoginIgnoreCase(authRequest.login) ?: throw NoSuchElementException("User with given login doesn't exist")
 
         if (!checkUserPassword(authRequest.password, user)) {
-            throw SignInException("Wrong password")
+            throw PassDoesntMatchException("Wrong password")
         }
 
         return jwtTokenHandler.generateJwtToken(user);
@@ -64,10 +65,10 @@ class AuthService(
 
     @Transactional
     fun changePassword(login: String, changePassRequest: ChangePassRequest): UserEntity {
-        var user = usersRepo.findByLoginIgnoreCase(login) ?: throw SignInException("User with given login doesn't exist")
+        var user = usersRepo.findByLoginIgnoreCase(login) ?: throw NoSuchElementException("User with given login doesn't exist")
 
         if (!checkUserPassword(changePassRequest.oldPass, user)) {
-            throw SignInException("Wrong password")
+            throw PassDoesntMatchException("Wrong password")
         }
 
         val (hashedPass, salt) = passHashingService.generateHashedPassAndSalt(changePassRequest.newPass)
