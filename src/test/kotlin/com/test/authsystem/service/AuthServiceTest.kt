@@ -1,22 +1,26 @@
 package com.test.authsystem.service
 
+import com.test.authsystem.constants.SystemRoles
 import com.test.authsystem.db.RolesRepository
 import com.test.authsystem.db.UsersRepository
 import com.test.authsystem.exception.DuplicateException
+import com.test.authsystem.exception.NotEnoughPermissionsException
 import com.test.authsystem.exception.PassDoesntMatchException
 import com.test.authsystem.generatePassEntity
 import com.test.authsystem.generateRoleEntity
 import com.test.authsystem.generateUserEntity
 import com.test.authsystem.model.api.AuthRequest
-import com.test.authsystem.model.api.ChangePassRequest
 import com.test.authsystem.model.api.CreateUserRequest
+import com.test.authsystem.model.db.RoleEntity
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
@@ -148,75 +152,78 @@ internal class AuthServiceTest {
         Assertions.assertThrows(PassDoesntMatchException::class.java) { authService.signInUser(authRequest) }
     }
 
-    @Test
-    fun testChangePasswordSuccess() {
-        val expectedLogin = "testLogin"
-        val expectedEmail = "testEmail"
-        val testPassHash = "somePassHash"
-        val expectedNewPassHash = "someNewHashPass"
-        val expectedBirthday = LocalDate.now()
-        val changePassRequest = ChangePassRequest(
-            oldPass = "someOldPass".toCharArray(),
-            newPass = "someNewPass".toCharArray()
-        )
+    @ParameterizedTest
+    @MethodSource("successRolePairs")
+    fun testAuthorizeRequestSuccess(userRole: SystemRoles, minRequiredRole: SystemRoles) {
+        val dumbJwt = "Dumb_jwt_token"
 
-        val passwordEntity = generatePassEntity(passHash = testPassHash)
-        whenever(usersRepo.findByLoginIgnoreCase(any())).thenReturn(
-            generateUserEntity(
-                login = expectedLogin,
-                email = expectedEmail,
-                passEntity = passwordEntity
+        whenever(jwtTokenHandler.getClaimFromToken(any(), any())).thenReturn(userRole.name)
+        whenever(rolesRepo.findByNameIgnoreCase(any())).thenReturn(
+            generateRoleEntity(minRequiredRole.name)
+        )
+        whenever(rolesRepo.findByPriorityValueLessThanEqual(any())).thenReturn(
+            generateRolesWithEqualOrMorePriority(
+                minRequiredRole
             )
         )
-        whenever(passHashingService.generateHashedPassWithSalt(any(), any())).thenReturn(testPassHash.toByteArray())
-        whenever(passHashingService.generateHashedPassAndSalt(any())).thenReturn(expectedNewPassHash.toByteArray() to "newSalt".toByteArray())
-        // Return the argument of save function
-        `when`(usersRepo.save(any())).thenAnswer { answer -> answer.arguments[0] }
 
-        val userEntity = authService.changePassword(expectedLogin, changePassRequest)
-
-        assertEquals(expectedLogin, userEntity.login)
-        assertEquals(expectedEmail, userEntity.email)
-        assertEquals(expectedBirthday, userEntity.birthday)
-        assertArrayEquals(expectedNewPassHash.toByteArray(), userEntity.passwordEntity.passwordHash)
+        authService.authorizeRequest(dumbJwt, minRequiredRole)
+        verify(jwtTokenHandler).getClaimFromToken(any(), eq(dumbJwt))
     }
 
-    @Test
-    fun testChangePasswordErrorOnUserAbsence() {
-        val expectedLogin = "testLogin"
-        val changePassRequest = ChangePassRequest(
-            oldPass = "someOldPass".toCharArray(),
-            newPass = "someNewPass".toCharArray()
+    @ParameterizedTest
+    @MethodSource("badRolePairs")
+    fun testAuthorizeRequestErrorOnInsufficientPermissions(userRole: SystemRoles, minRequiredRole: SystemRoles) {
+        val dumbJwt = "Dumb_jwt_token"
+
+        whenever(jwtTokenHandler.getClaimFromToken(any(), any())).thenReturn(userRole.name)
+        whenever(rolesRepo.findByNameIgnoreCase(any())).thenReturn(
+            generateRoleEntity(minRequiredRole.name)
         )
-
-        whenever(usersRepo.findByLoginIgnoreCase(any())).thenReturn(null)
-
-        Assertions.assertThrows(NoSuchElementException::class.java) { authService.changePassword(expectedLogin, changePassRequest) }
-
-        verify(usersRepo).findByLoginIgnoreCase(eq(expectedLogin))
-    }
-
-    @Test
-    fun testChangePasswordErrorOnHashMismatch() {
-        val expectedLogin = "testLogin"
-        val expectedEmail = "testEmail"
-        val testPassHash = "somePassHash"
-        val wrongPassHash = "completelyOtherHash"
-        val changePassRequest = ChangePassRequest(
-            oldPass = "someOldPass".toCharArray(),
-            newPass = "someNewPass".toCharArray()
-        )
-
-        val passwordEntity = generatePassEntity(passHash = testPassHash)
-        whenever(usersRepo.findByLoginIgnoreCase(any())).thenReturn(
-            generateUserEntity(
-                login = expectedLogin,
-                email = expectedEmail,
-                passEntity = passwordEntity
+        whenever(rolesRepo.findByPriorityValueLessThanEqual(any())).thenReturn(
+            generateRolesWithEqualOrMorePriority(
+                minRequiredRole
             )
         )
-        whenever(passHashingService.generateHashedPassWithSalt(any(), any())).thenReturn(wrongPassHash.toByteArray())
 
-        Assertions.assertThrows(PassDoesntMatchException::class.java) { authService.changePassword(expectedLogin, changePassRequest) }
+        Assertions.assertThrows(NotEnoughPermissionsException::class.java) {
+            authService.authorizeRequest(dumbJwt, minRequiredRole)
+        }
+    }
+
+    private fun generateRolesWithEqualOrMorePriority(role: SystemRoles): List<RoleEntity> {
+        return when (role) {
+            SystemRoles.ADMIN -> listOf(generateRoleEntity(SystemRoles.ADMIN.name))
+            SystemRoles.REVIEWER -> listOf(
+                generateRoleEntity(SystemRoles.ADMIN.name),
+                generateRoleEntity(SystemRoles.REVIEWER.name)
+            )
+            SystemRoles.USER -> listOf(
+                generateRoleEntity(SystemRoles.ADMIN.name),
+                generateRoleEntity(SystemRoles.REVIEWER.name),
+                generateRoleEntity(SystemRoles.USER.name)
+            )
+        }
+    }
+
+    companion object {
+        @JvmStatic
+        fun successRolePairs() = listOf(
+            // User role on the left and min required role on the right
+            Arguments.of(SystemRoles.USER, SystemRoles.USER),
+            Arguments.of(SystemRoles.REVIEWER, SystemRoles.USER),
+            Arguments.of(SystemRoles.REVIEWER, SystemRoles.REVIEWER),
+            Arguments.of(SystemRoles.ADMIN, SystemRoles.USER),
+            Arguments.of(SystemRoles.ADMIN, SystemRoles.REVIEWER),
+            Arguments.of(SystemRoles.ADMIN, SystemRoles.ADMIN),
+        )
+
+        @JvmStatic
+        fun badRolePairs() = listOf(
+            // User role on the left and min required role on the right
+            Arguments.of(SystemRoles.USER, SystemRoles.ADMIN),
+            Arguments.of(SystemRoles.REVIEWER, SystemRoles.ADMIN),
+            Arguments.of(SystemRoles.USER, SystemRoles.REVIEWER)
+        )
     }
 }

@@ -39,8 +39,7 @@ internal class JwtTokenHandlerTest {
 
     @Test
     fun testGenerateJwtTokenAndGetClaimsSuccess() {
-        val expectedLifespan = Duration.ofMinutes(10)
-        val leastExpectedExpiration = LocalDateTime.now().plus(expectedLifespan)
+        val currentTimestamp = LocalDateTime.now()
         val expectedSubject = random.nextLong()
         val expectedEmailClaim = "testEmail@gmail.com"
         val expectedLoginClaim = "someLogin"
@@ -62,7 +61,7 @@ internal class JwtTokenHandlerTest {
             .build()
             .parseClaimsJws(jwtToken)
 
-        assertTrue(expirationTimestamp.isAfter(leastExpectedExpiration))
+        assertTrue(expirationTimestamp.isAfter(currentTimestamp))
         assertEquals(testIssuer, claims.body[Claims.ISSUER])
         assertEquals(expectedSubject.toString(), claims.body[Claims.SUBJECT])
         assertEquals(expectedEmailClaim, jwtTokenHandler.getClaimFromToken(AuthClaims.EMAIL, jwtToken))

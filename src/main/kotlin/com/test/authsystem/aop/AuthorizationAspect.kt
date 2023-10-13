@@ -1,10 +1,7 @@
 package com.test.authsystem.aop
 
-import com.test.authsystem.constants.AuthClaims
-import com.test.authsystem.db.RolesRepository
 import com.test.authsystem.exception.AuthException
-import com.test.authsystem.exception.NotEnoughPermissionsException
-import com.test.authsystem.service.JwtTokenHandler
+import com.test.authsystem.service.AuthService
 import com.test.authsystem.util.extractJwtTokenFromHeader
 import mu.KLogger
 import mu.KotlinLogging
@@ -19,11 +16,9 @@ import org.springframework.web.context.request.ServletRequestAttributes
 
 @Aspect
 @Component
-class AuthorizationAspect(
-    val rolesRepo: RolesRepository,
-    val jwtTokenHandler: JwtTokenHandler,
-    val log: KLogger = KotlinLogging.logger {}
-) {
+class AuthorizationAspect(val authService: AuthService) {
+
+    private val log: KLogger = KotlinLogging.logger {}
 
     @Before("@annotation(authorized)")
     @Throws(Throwable::class)
@@ -31,27 +26,17 @@ class AuthorizationAspect(
         log.info { "Authorizing request" }
         val minRequiredRole = authorized.minRole
 
-        val jwtToken = extractJwtTokenFromHeader(getAuthHeader());
-        val jwtRole = jwtTokenHandler.getClaimFromToken(AuthClaims.ROLE, jwtToken)
-
-        val minRequiredRoleEntity = rolesRepo.findByNameIgnoreCase(minRequiredRole.name) ?: throw RuntimeException("$minRequiredRole wasn't found")
-        val jwtRoleCorrect = rolesRepo.findByPriorityValueLessThanEqual(minRequiredRoleEntity.priorityValue)
-            .map { roleEntity -> roleEntity.name.lowercase() }
-            .contains(jwtRole.lowercase())
-
-        if (!jwtRoleCorrect) {
-            throw NotEnoughPermissionsException("User's permissions isn't enough to access the endpoint")
-        }
+        val jwtToken = extractJwtTokenFromHeader(getAuthHeader())
+        authService.authorizeRequest(jwtToken, minRequiredRole)
     }
 
-    private fun getAuthHeader() : String {
+    private fun getAuthHeader(): String {
         val attributes: RequestAttributes? = RequestContextHolder.getRequestAttributes()
-        var authHeader : String? = null
+        var authHeader: String? = null
         if (attributes is ServletRequestAttributes) {
             authHeader = attributes.request.getHeader(HttpHeaders.AUTHORIZATION)
         }
         return authHeader ?: throw AuthException("No authorization header in the request")
     }
-
 
 }

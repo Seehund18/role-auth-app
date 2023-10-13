@@ -62,7 +62,7 @@ class UsersAuthController(
         checkJwtAndRequestUsers(authHeader, login)
 
         log.info { "Processing change password request for user $login" }
-        authService.changePassword(login, changeRequest)
+        userModificationService.changePassword(login, changeRequest)
 
         return StatusResponse(status = SystemResponseStatus.SUCCESS.name, description = "Password has been changed")
     }
