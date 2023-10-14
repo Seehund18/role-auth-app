@@ -4,7 +4,13 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.test.authsystem.constants.SystemRoles
 import com.test.authsystem.db.RolesRepository
 import com.test.authsystem.db.UsersRepository
+import com.test.authsystem.generateRandomString
 import com.test.authsystem.model.api.StatusResponse
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -35,9 +41,26 @@ constructor(
 
     @Test
     fun testAddSingleUserSuccess() {
-        val expectedLogin = "testLogin"
-        val expectedEmail = "testEmail@gmail.com"
-        val password = "myTestPassword"
+        sendRequestAndCheckAddingOneUser()
+    }
+
+    @Test
+    fun testAddMultipleUsersInParallelSuccess() = runBlocking {
+        val jobs = mutableListOf<Deferred<Any>>()
+        repeat(10) {
+            jobs += async(Dispatchers.IO) {
+                sendRequestAndCheckAddingOneUser()
+            }
+        }
+        jobs.awaitAll()
+
+        Assertions.assertEquals(10, userRepo.count())
+    }
+
+    private fun sendRequestAndCheckAddingOneUser() {
+        val expectedLogin = generateRandomString(10)
+        val expectedEmail = "${generateRandomString(5)}@gmail.com"
+        val password = generateRandomString(15)
         val expectedBirthday = "1995-09-02"
 
         val createUserRequestBody = """

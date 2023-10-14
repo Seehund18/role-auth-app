@@ -7,7 +7,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.random.Random
 
-val random = Random(512)
+private val random = Random(512)
 
 fun generateUserEntity(login: String?, email: String?, passEntity: PasswordEntity?): UserEntity {
     return generateUserEntity(login, email, null, passEntity)
@@ -66,4 +66,12 @@ fun generatePassEntity(passHash : String?, salt: String?): PasswordEntity {
             passwordHash = passHash?.toByteArray() ?: "someTestHash".toByteArray(),
             salt = salt?.toByteArray() ?: "someSalt".toByteArray()
     )
+}
+
+private val charPool = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+
+fun generateRandomString(length: Int) : String {
+    return (1..length)
+        .map { Random.nextInt(0, charPool.size).let { charPool[it] } }
+        .joinToString("")
 }
