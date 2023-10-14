@@ -14,6 +14,7 @@ version = "0.0.1-SNAPSHOT"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 repositories {
@@ -23,11 +24,14 @@ repositories {
 val postgresPassword = "test_pass"
 
 dependencies {
+    // Spring
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-aop")
+
+    // Logging
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 
     // JSON web token
@@ -42,10 +46,12 @@ dependencies {
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
     implementation("org.junit.jupiter:junit-jupiter:5.9.2")
     testImplementation(kotlin("test"))
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
     testImplementation("org.mockito:mockito-inline:5.2.0")
+    testImplementation("org.testcontainers:junit-jupiter")
 }
 
 flyway {

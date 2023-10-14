@@ -1,0 +1,21 @@
+spring:
+  application.name: test-auth-system
+  datasource:
+    username: testcontainers
+    password: 1234
+  jpa:
+    show-sql: true
+  flyway:
+    schemas: auth_system
+
+password-generator:
+  pbkdf2:
+    iteration-count: 65536
+    key-length: 512
+    salt-length: 64
+
+jwt:
+  token:
+    issuer: auth-system
+    lifespan: 10m
+    secret: ytygwit6uifby7w4tit37457i7885ghjj
