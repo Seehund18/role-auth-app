@@ -77,7 +77,7 @@ constructor(
             .content(createUserRequestBody)
 
         val response = mockMvc.perform(request)
-            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.status().isCreated)
             .andReturn()
             .response
             .contentAsString

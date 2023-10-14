@@ -16,9 +16,11 @@ import com.test.authsystem.service.JwtTokenHandler
 import com.test.authsystem.service.UserModificationService
 import com.test.authsystem.util.extractJwtTokenFromHeader
 import jakarta.validation.Valid
+import java.net.URI
 import mu.KLogger
 import mu.KotlinLogging
 import org.springframework.http.HttpHeaders
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -37,11 +39,12 @@ class UsersAuthController(
 ) {
 
     @PostMapping
-    fun addUser(@RequestBody @Valid createUserRequest: CreateUserRequest): StatusResponse {
+    fun addUser(@RequestBody @Valid createUserRequest: CreateUserRequest): ResponseEntity<StatusResponse> {
         log.info { "Processing request for adding a new user: ${createUserRequest.login}" }
         authService.signUpNewUser(createUserRequest)
 
-        return StatusResponse(status = SystemResponseStatus.SUCCESS.name, description = "User has been successfully created")
+        return ResponseEntity.created(URI("/v0/users/${createUserRequest.login}"))
+            .body(StatusResponse(status = SystemResponseStatus.SUCCESS.name, description = "User has been successfully created"))
     }
 
     @PostMapping("/auth")

@@ -31,7 +31,7 @@ class ExceptionControllerAdvice(val log: KLogger = KotlinLogging.logger {}) {
     @ExceptionHandler(DuplicateException::class)
     fun handleDuplicateException(req: HttpServletRequest, ex: DuplicateException): StatusResponse {
         log.error("Duplication Error: ", ex)
-        return StatusResponse(status = SystemResponseStatus.FAILED.name, description = ex.message)
+        return StatusResponse(status = SystemResponseStatus.FAILED.name, description = ex.message ?: "Data conflict")
     }
 
     @ResponseBody
