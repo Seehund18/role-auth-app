@@ -64,13 +64,13 @@ internal class UsersAuthControllerTest(@Autowired private val mockMvc : MockMvc)
 
     @ParameterizedTest
     @MethodSource("badAddUserParameters")
-    fun testAddUserRequestValidationError(login : String, email : String, password : String, birthday : String) {
+    fun testAddUserRequestValidationError(login : String?, email : String?, password : String?, birthday : String?) {
         val createUserRequestBody = """
             {
-                "login": "$login",
-                "email": "$email",
-                "password": "$password",
-                "birthday": "$birthday"
+                "login": ${if (login != null) "\"$login\"" else null},
+                "email": ${if (email != null) "\"$email\"" else null},
+                "password": ${if (password != null) "\"$password\"" else null},
+                "birthday": ${if (birthday != null) "\"$birthday\"" else null}
             }
         """
         val request = MockMvcRequestBuilders
@@ -113,15 +113,19 @@ internal class UsersAuthControllerTest(@Autowired private val mockMvc : MockMvc)
     companion object {
         @JvmStatic
         fun badAddUserParameters() = listOf(
+            Arguments.of(null, "correctEmail@gmail.com", "correctPass", "1995-09-02"),
             Arguments.of("", "correctEmail@gmail.com", "correctPass", "1995-09-02"),
             Arguments.of("   ", "correctEmail@gmail.com", "correctPass", "1995-09-02"),
+            Arguments.of("correctLogin", null, "correctPass", "1995-09-02"),
             Arguments.of("correctLogin", "", "correctPass", "1995-09-02"),
             Arguments.of("correctLogin", "    ", "correctPass", "1995-09-02"),
-            Arguments.of("correctLogin", "notCorrectEmail", "correctPass", "1995-09-02"),
-            //TODO Add simple password validation
-//            Arguments.of("correctLogin", "correctEmail@gmail.com", "", "1995-09-02"),
-//            Arguments.of("correctLogin", "correctEmail@gmail.com", "   ", "1995-09-02"),
+            Arguments.of("correctLogin", "correctEmail@gmail.com", null, "1995-09-02"),
+            Arguments.of("correctLogin", "correctEmail@gmail.com", "", "1995-09-02"),
+            Arguments.of("correctLogin", "correctEmail@gmail.com", "   ", "1995-09-02"),
+            Arguments.of("correctLogin", "correctEmail@gmail.com", "correctPass", null),
             Arguments.of("correctLogin", "correctEmail@gmail.com", "correctPass", ""),
+            Arguments.of("correctLogin", "correctEmail@gmail.com", "correctPass", "    "),
+            Arguments.of("correctLogin", "correctEmail@gmail.com", "correctPass", "2100-10-14")
         )
 
         @JvmStatic
