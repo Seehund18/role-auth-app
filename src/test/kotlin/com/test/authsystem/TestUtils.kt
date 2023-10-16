@@ -7,8 +7,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.random.Random
 
-private val random = Random(512)
-
 fun generateUserEntity(login: String?, email: String?, passEntity: PasswordEntity?): UserEntity {
     return generateUserEntity(login, email, null, passEntity)
 }
@@ -20,19 +18,19 @@ fun generateUserEntity(
     passEntity: PasswordEntity?
 ): UserEntity {
     return UserEntity(
-        id = random.nextLong(),
+        id = null,
         login = login ?: "testLogin",
         email = email ?: "testEmail",
         registrationTimestamp = LocalDateTime.now(),
         birthday = LocalDate.now(),
         role = roleEntity ?: RoleEntity(
-            id = random.nextLong(),
+            id = null,
             name = "testRole",
             description = "testDesc",
             priorityValue = 100
         ),
         passwordEntity = passEntity ?: PasswordEntity(
-            id = random.nextLong(),
+            id = null,
             passwordHash = "someTestHash".toByteArray(),
             salt = "someSalt".toByteArray()
         )
@@ -49,7 +47,7 @@ fun generateRoleEntity(name: String?): RoleEntity {
 
 fun generateRoleEntity(name: String?, description: String?, priorityValue: Int?): RoleEntity {
     return RoleEntity(
-        id = random.nextLong(),
+        id = null,
         name = name ?: "testRole",
         description = description ?: "testDesc",
         priorityValue = priorityValue ?: 100
@@ -62,7 +60,7 @@ fun generatePassEntity(passHash: String?): PasswordEntity {
 
 fun generatePassEntity(passHash: String?, salt: String?): PasswordEntity {
     return PasswordEntity(
-        id = random.nextLong(),
+        id = null,
         passwordHash = passHash?.toByteArray() ?: "someTestHash".toByteArray(),
         salt = salt?.toByteArray() ?: "someSalt".toByteArray()
     )
