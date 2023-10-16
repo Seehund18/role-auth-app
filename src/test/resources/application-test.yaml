@@ -18,4 +18,4 @@ jwt:
   token:
     issuer: auth-system
     lifespan: 10m
-    secret: ytygwit6uifby7w4tit37457i7885ghjj
+    secret: ytygwit6uifby7w4tit3jnvlsjhbljskvhljkasgvjahnlvhaljkvgadskjvgasjkldvgasdjklvgaskldj7457i7885ghjj56xj

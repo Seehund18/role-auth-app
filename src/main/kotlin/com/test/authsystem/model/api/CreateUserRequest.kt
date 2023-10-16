@@ -14,7 +14,7 @@ data class CreateUserRequest(
     @field:Email(message = "not correct email")
     val email: String,
 
-    @field:NotBlankPassword(message = "Password must not be blan")
+    @field:NotBlankPassword(message = "Password must not be blank")
     val password: CharArray,
 
     @field:Past(message = "Birthday must be in the past")

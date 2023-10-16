@@ -1,10 +1,17 @@
 package com.test.authsystem
 
+import com.test.authsystem.constants.AuthClaims
+import com.test.authsystem.constants.SystemRoles
 import com.test.authsystem.model.db.PasswordEntity
 import com.test.authsystem.model.db.RoleEntity
 import com.test.authsystem.model.db.UserEntity
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.SignatureAlgorithm
+import io.jsonwebtoken.security.Keys
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.*
 import kotlin.random.Random
 
 private val random = Random(512)
@@ -56,22 +63,37 @@ fun generateRoleEntity(name: String?, description: String?, priorityValue: Int?)
     )
 }
 
-fun generatePassEntity(passHash : String?): PasswordEntity {
+fun generatePassEntity(passHash: String?): PasswordEntity {
     return generatePassEntity(passHash, null)
 }
 
-fun generatePassEntity(passHash : String?, salt: String?): PasswordEntity {
+fun generatePassEntity(passHash: String?, salt: String?): PasswordEntity {
     return PasswordEntity(
-            id = random.nextLong(),
-            passwordHash = passHash?.toByteArray() ?: "someTestHash".toByteArray(),
-            salt = salt?.toByteArray() ?: "someSalt".toByteArray()
+        id = random.nextLong(),
+        passwordHash = passHash?.toByteArray() ?: "someTestHash".toByteArray(),
+        salt = salt?.toByteArray() ?: "someSalt".toByteArray()
     )
 }
 
 private val charPool = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 
-fun generateRandomString(length: Int) : String {
+fun generateRandomString(length: Int): String {
     return (1..length)
         .map { Random.nextInt(0, charPool.size).let { charPool[it] } }
         .joinToString("")
+}
+
+fun generateJwtTokenWithRole(login: String, email: String, role: SystemRoles, testSecret: String): String {
+    val key = Keys.hmacShaKeyFor(testSecret.toByteArray())
+    val expirationDate = LocalDateTime.now().plusDays(1)
+
+    return Jwts.builder()
+        .setExpiration(Date.from(expirationDate.atZone(ZoneId.systemDefault()).toInstant()))
+        .setAudience("auth-system")
+        .signWith(key, SignatureAlgorithm.HS256)
+        .claim(AuthClaims.EMAIL.claimName, email)
+        .claim(AuthClaims.LOGIN.claimName, login)
+        .claim(AuthClaims.ROLE.claimName, role)
+        .compact()
+
 }

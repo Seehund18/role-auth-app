@@ -62,7 +62,7 @@ class ExceptionControllerAdvice(val log: KLogger = KotlinLogging.logger {}) {
     fun handleUserNotFoundException(req: HttpServletRequest, ex: Exception): StatusResponse {
         log.error("Error: ", ex)
 
-        return StatusResponse(status = SystemResponseStatus.FAILED.name, description = ex.message)
+        return StatusResponse(status = SystemResponseStatus.FAILED.name, description = ex.message ?: "Data don't match")
     }
 
     @ResponseBody
@@ -70,7 +70,7 @@ class ExceptionControllerAdvice(val log: KLogger = KotlinLogging.logger {}) {
     @ExceptionHandler(AuthException::class, JwtTokenException::class, MissingRequestHeaderException::class)
     fun handleAuthExceptions(req: HttpServletRequest, ex: Exception): StatusResponse {
         log.error("Authorization exception: ", ex)
-        return StatusResponse(status = SystemResponseStatus.FAILED.name, description = ex.message)
+        return StatusResponse(status = SystemResponseStatus.FAILED.name, description = ex.message ?: "Authorization error")
     }
 
     @ResponseBody
@@ -78,7 +78,7 @@ class ExceptionControllerAdvice(val log: KLogger = KotlinLogging.logger {}) {
     @ExceptionHandler(NotEnoughPermissionsException::class, UsersDontMatchException::class)
     fun handleRuntimeException(req: HttpServletRequest, ex: Exception): StatusResponse {
         log.error("User doesn't have necessary permissions: ", ex)
-        return StatusResponse(status = SystemResponseStatus.FAILED.name, description = ex.message)
+        return StatusResponse(status = SystemResponseStatus.FAILED.name, description = ex.message ?: "Authentication error")
     }
 
     @ResponseBody

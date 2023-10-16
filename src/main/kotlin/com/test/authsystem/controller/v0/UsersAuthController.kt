@@ -48,11 +48,12 @@ class UsersAuthController(
     }
 
     @PostMapping("/auth")
-    fun authUser(@RequestBody authRequest: AuthRequest): AuthResponse {
+    fun authUser(@RequestBody @Valid authRequest: AuthRequest): ResponseEntity<AuthResponse> {
         log.info { "Processing auth request for user ${authRequest.login}" }
         val (jwtToken, expirationDate) = authService.signInUser(authRequest)
 
-        return AuthResponse(SystemResponseStatus.SUCCESS.name, jwtToken, expirationDate)
+        return ResponseEntity.ok()
+            .body(AuthResponse(SystemResponseStatus.SUCCESS.name, jwtToken, expirationDate))
     }
 
     @Authorized(SystemRoles.USER)
@@ -60,14 +61,15 @@ class UsersAuthController(
     fun changePassword(
         @PathVariable("user") login: String,
         @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String,
-        @RequestBody changeRequest: ChangePassRequest
-    ): StatusResponse {
+        @RequestBody @Valid changeRequest: ChangePassRequest
+    ): ResponseEntity<StatusResponse> {
         checkJwtAndRequestUsers(authHeader, login)
 
         log.info { "Processing change password request for user $login" }
         userModificationService.changePassword(login, changeRequest)
 
-        return StatusResponse(status = SystemResponseStatus.SUCCESS.name, description = "Password has been changed")
+        return ResponseEntity.ok()
+            .body(StatusResponse(status = SystemResponseStatus.SUCCESS.name, description = "Password has been changed"))
     }
 
     private fun checkJwtAndRequestUsers(authHeader: String, login : String) {
@@ -80,11 +82,12 @@ class UsersAuthController(
     @PutMapping("/{user}/role")
     fun changeRole(
         @PathVariable("user") login: String,
-        @RequestBody changeRoleRequest: ChangeRoleRequest
-    ): StatusResponse {
+        @RequestBody @Valid changeRoleRequest: ChangeRoleRequest
+    ): ResponseEntity<StatusResponse> {
         log.info { "Processing role change to ${changeRoleRequest.newRole} for the user $login" }
         userModificationService.changeUserRole(login, changeRoleRequest)
 
-        return StatusResponse(status = SystemResponseStatus.SUCCESS.name, description = "Role has been changed")
+        return ResponseEntity.ok()
+            .body(StatusResponse(status = SystemResponseStatus.SUCCESS.name, description = "Role has been changed"))
     }
 }

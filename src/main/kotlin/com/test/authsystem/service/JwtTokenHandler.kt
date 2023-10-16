@@ -29,7 +29,7 @@ class JwtTokenHandler(var tokenProps: JwtTokenProps) {
             .claim(AuthClaims.EMAIL.claimName, userEntity.email)
             .claim(AuthClaims.LOGIN.claimName, userEntity.login)
             .claim(AuthClaims.ROLE.claimName, userEntity.role.name)
-            .compact();
+            .compact()
 
         return jwt to expirationDate
     }
