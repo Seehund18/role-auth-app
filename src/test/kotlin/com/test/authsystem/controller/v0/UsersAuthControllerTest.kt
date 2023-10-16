@@ -1,7 +1,5 @@
 package com.test.authsystem.controller.v0
 
-import com.test.authsystem.aop.AuthorizationAspect
-import com.test.authsystem.config.props.JwtTokenProps
 import com.test.authsystem.constants.AuthClaims
 import com.test.authsystem.constants.SystemResponseStatus
 import com.test.authsystem.exception.DuplicateException
@@ -16,6 +14,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.NullAndEmptySource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.whenever
@@ -23,8 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired
 
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.context.annotation.ComponentScan
-import org.springframework.context.annotation.FilterType
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -35,16 +32,12 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 
-@WebMvcTest(includeFilters = [
-    ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = [JwtTokenProps::class]),
-    ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = [AuthorizationAspect::class])
-])
+@WebMvcTest
 @ActiveProfiles("test")
 internal class UsersAuthControllerTest
 @Autowired
 constructor(
-    private val mockMvc: MockMvc,
-    private val jwtProps: JwtTokenProps
+    private val mockMvc: MockMvc
 ) {
 
     @MockBean
@@ -208,7 +201,7 @@ constructor(
     }
 
     @ParameterizedTest
-    @MethodSource("badBlankParameters")
+    @NullAndEmptySource
     fun testChangeUserPasswordRequestValidationError(newPass: String?) {
         val user = "newUser"
         val oldPass = "oldPass"
@@ -280,7 +273,7 @@ constructor(
     }
 
     @ParameterizedTest
-    @MethodSource("badBlankParameters")
+    @NullAndEmptySource
     fun testChangeUserRoleBadRequestError(newRole : String?) {
         val user = "newUser"
 
@@ -329,13 +322,6 @@ constructor(
             Arguments.of("correctLogin", null),
             Arguments.of("correctLogin", ""),
             Arguments.of("correctLogin", "   "),
-        )
-
-        @JvmStatic
-        fun badBlankParameters() = listOf(
-            Arguments.of(null),
-            Arguments.of(""),
-            Arguments.of("   "),
         )
 
         @JvmStatic

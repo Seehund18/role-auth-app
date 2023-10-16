@@ -1,17 +1,10 @@
 package com.test.authsystem
 
-import com.test.authsystem.constants.AuthClaims
-import com.test.authsystem.constants.SystemRoles
 import com.test.authsystem.model.db.PasswordEntity
 import com.test.authsystem.model.db.RoleEntity
 import com.test.authsystem.model.db.UserEntity
-import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
-import io.jsonwebtoken.security.Keys
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.util.*
 import kotlin.random.Random
 
 private val random = Random(512)
@@ -81,19 +74,4 @@ fun generateRandomString(length: Int): String {
     return (1..length)
         .map { Random.nextInt(0, charPool.size).let { charPool[it] } }
         .joinToString("")
-}
-
-fun generateJwtTokenWithRole(login: String, email: String, role: SystemRoles, testSecret: String): String {
-    val key = Keys.hmacShaKeyFor(testSecret.toByteArray())
-    val expirationDate = LocalDateTime.now().plusDays(1)
-
-    return Jwts.builder()
-        .setExpiration(Date.from(expirationDate.atZone(ZoneId.systemDefault()).toInstant()))
-        .setAudience("auth-system")
-        .signWith(key, SignatureAlgorithm.HS256)
-        .claim(AuthClaims.EMAIL.claimName, email)
-        .claim(AuthClaims.LOGIN.claimName, login)
-        .claim(AuthClaims.ROLE.claimName, role)
-        .compact()
-
 }
