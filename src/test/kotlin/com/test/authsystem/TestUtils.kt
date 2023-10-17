@@ -59,10 +59,14 @@ fun generatePassEntity(passHash: String?): PasswordEntity {
 }
 
 fun generatePassEntity(passHash: String?, salt: String?): PasswordEntity {
+    return generatePassEntity(passHash?.toByteArray(), salt?.toByteArray())
+}
+
+fun generatePassEntity(passHash: ByteArray?, salt: ByteArray?): PasswordEntity {
     return PasswordEntity(
         id = null,
-        passwordHash = passHash?.toByteArray() ?: "someTestHash".toByteArray(),
-        salt = salt?.toByteArray() ?: "someSalt".toByteArray()
+        passwordHash = passHash ?: "someTestHash".toByteArray(),
+        salt = salt ?: "someSalt".toByteArray()
     )
 }
 
