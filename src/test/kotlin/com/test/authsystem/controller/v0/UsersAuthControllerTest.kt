@@ -308,9 +308,6 @@ constructor(
             Arguments.of("correctLogin", "correctEmail@gmail.com", null, "1995-09-02"),
             Arguments.of("correctLogin", "correctEmail@gmail.com", "", "1995-09-02"),
             Arguments.of("correctLogin", "correctEmail@gmail.com", "   ", "1995-09-02"),
-            Arguments.of("correctLogin", "correctEmail@gmail.com", "correctPass", null),
-            Arguments.of("correctLogin", "correctEmail@gmail.com", "correctPass", ""),
-            Arguments.of("correctLogin", "correctEmail@gmail.com", "correctPass", "    "),
             Arguments.of("correctLogin", "correctEmail@gmail.com", "correctPass", "2100-10-14")
         )
 

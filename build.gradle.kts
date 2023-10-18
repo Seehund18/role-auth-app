@@ -34,6 +34,9 @@ dependencies {
     // Logging
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 
+    // Swagger
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
+
     // JSON web token
     api("io.jsonwebtoken:jjwt-api:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")

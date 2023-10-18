@@ -15,6 +15,14 @@ import com.test.authsystem.service.AuthService
 import com.test.authsystem.service.JwtTokenHandler
 import com.test.authsystem.service.UserModificationService
 import com.test.authsystem.util.extractJwtTokenFromHeader
+import io.swagger.v3.oas.annotations.OpenAPIDefinition
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.info.Info
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import java.net.URI
 import mu.KLogger
@@ -29,6 +37,16 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+@OpenAPIDefinition(
+    info = Info(
+        title = "Role based auth system API",
+        version = "0",
+        description = """System with role protected endpoints. Currently supported roles:
+            ADMIN > REVIEWER > USER
+            """
+    )
+)
+@Tag(name = "User API", description = "Actions with users")
 @RestController
 @RequestMapping("/v0/users")
 class UsersAuthController(
@@ -38,15 +56,78 @@ class UsersAuthController(
     val log: KLogger = KotlinLogging.logger {}
 ) {
 
+    @Operation(summary = "Create new user. Available to everyone")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "201", description = "User has been successfully created", content = [
+                    (Content(mediaType = "application/json", schema = Schema(implementation = StatusResponse::class)))]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Data from request isn't valid",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            ),
+            ApiResponse(
+                responseCode = "409",
+                description = "User with such login and email already exists",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            ),
+            ApiResponse(
+                responseCode = "500",
+                description = "Internal error",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            )
+        ]
+    )
     @PostMapping
     fun addUser(@RequestBody @Valid createUserRequest: CreateUserRequest): ResponseEntity<StatusResponse> {
         log.info { "Processing request for adding a new user: ${createUserRequest.login}" }
         authService.signUpNewUser(createUserRequest)
 
         return ResponseEntity.created(URI("/v0/users/${createUserRequest.login}"))
-            .body(StatusResponse(status = SystemResponseStatus.SUCCESS.name, description = "User has been successfully created"))
+            .body(
+                StatusResponse(
+                    status = SystemResponseStatus.SUCCESS.name,
+                    description = "User has been successfully created"
+                )
+            )
     }
 
+    @Operation(summary = "Authenticate the user with username and password. Available to everyone")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200", description = "User has been authenticated", content = [
+                    (Content(mediaType = "application/json", schema = Schema(implementation = AuthResponse::class)))]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Data from request isn't correct or valid",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            ),
+            ApiResponse(
+                responseCode = "500",
+                description = "Internal error",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            )
+        ]
+    )
     @PostMapping("/auth")
     fun authUser(@RequestBody @Valid authRequest: AuthRequest): ResponseEntity<AuthResponse> {
         log.info { "Processing auth request for user ${authRequest.login}" }
@@ -56,6 +137,47 @@ class UsersAuthController(
             .body(AuthResponse(SystemResponseStatus.SUCCESS.name, jwtToken, expirationDate))
     }
 
+    @Operation(summary = "Change user's password. Available only to the user changing password")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200", description = "Password has been changed", content = [
+                    (Content(mediaType = "application/json", schema = Schema(implementation = StatusResponse::class)))]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Data from the request isn't correct or valid",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "No JWT token in Authorization header or it's malformed",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "User doesn't have necessary permissions",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            ),
+            ApiResponse(
+                responseCode = "500",
+                description = "Internal error",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            )
+        ]
+    )
     @Authorized(SystemRoles.USER)
     @PutMapping("/{user}/password")
     fun changePassword(
@@ -72,12 +194,53 @@ class UsersAuthController(
             .body(StatusResponse(status = SystemResponseStatus.SUCCESS.name, description = "Password has been changed"))
     }
 
-    private fun checkJwtAndRequestUsers(authHeader: String, login : String) {
+    private fun checkJwtAndRequestUsers(authHeader: String, login: String) {
         val jwtToken = extractJwtTokenFromHeader(authHeader)
         val jwtUser = jwtTokenHandler.getClaimFromToken(AuthClaims.LOGIN, jwtToken)
         if (jwtUser.lowercase() != login.lowercase()) throw UsersDontMatchException("Other users can't be modified")
     }
 
+    @Operation(summary = "Change user's role. Available only to the admin")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200", description = "User role has been changed", content = [
+                    (Content(mediaType = "application/json", schema = Schema(implementation = StatusResponse::class)))]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Data from the request isn't correct or valid",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "No JWT token in Authorization header or it's malformed",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "User doesn't have necessary permissions",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            ),
+            ApiResponse(
+                responseCode = "500",
+                description = "Internal error",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            )
+        ]
+    )
     @Authorized(SystemRoles.ADMIN)
     @PutMapping("/{user}/role")
     fun changeRole(

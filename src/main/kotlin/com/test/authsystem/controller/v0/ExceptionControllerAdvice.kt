@@ -8,6 +8,7 @@ import com.test.authsystem.exception.NotEnoughPermissionsException
 import com.test.authsystem.exception.PassDoesntMatchException
 import com.test.authsystem.exception.UsersDontMatchException
 import com.test.authsystem.model.api.StatusResponse
+import io.swagger.v3.oas.annotations.Hidden
 import jakarta.servlet.http.HttpServletRequest
 import mu.KLogger
 import mu.KotlinLogging
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.ResponseStatus
 
+@Hidden
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
 class ExceptionControllerAdvice(val log: KLogger = KotlinLogging.logger {}) {

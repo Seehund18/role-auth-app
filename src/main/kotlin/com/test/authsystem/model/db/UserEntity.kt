@@ -23,7 +23,7 @@ class UserEntity(
     @Column(nullable = false) var login: String,
     @Column(nullable = false) var email: String,
     @Column(nullable = true) var registrationTimestamp: LocalDateTime?,
-    @Column(nullable = true) var birthday: LocalDate,
+    @Column(nullable = true) var birthday: LocalDate?,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)
