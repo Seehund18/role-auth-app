@@ -29,6 +29,7 @@ import mu.KLogger
 import mu.KotlinLogging
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -49,6 +50,7 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "User API", description = "Actions with users")
 @RestController
 @RequestMapping("/v0/users")
+@CrossOrigin(origins = ["http://localhost:3000"])
 class UsersAuthController(
     var authService: AuthService,
     var userModificationService: UserModificationService,
