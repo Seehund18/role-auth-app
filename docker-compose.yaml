@@ -1,8 +1,24 @@
+version: "3"
 services:
   postgres:
     image: postgres:15
     restart: always
     environment:
+      POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "test_pass"
     ports:
       - 5432:5432
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  role-auth-system-backend:
+    image: role-auth-system-backend:latest
+    restart: always
+    environment:
+      POSTGRES_JDBC_URL: "jdbc:postgresql://host.docker.internal:5432/postgres"
+      POSTGRES_USERNAME: "postgres"
+      POSTGRES_PASS: "test_pass"
+    ports:
+      - 8080:8080
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

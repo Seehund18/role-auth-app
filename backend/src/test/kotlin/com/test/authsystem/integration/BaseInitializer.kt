@@ -20,7 +20,7 @@ open class BaseInitializer : ApplicationContextInitializer<ConfigurableApplicati
 
         private val POSTGRES = Container("postgres", 5432, 5450)
 
-        var testDockerCompose: ClassPathResource = ClassPathResource("./test-docker-compose.yaml")
+        var testDockerCompose: ClassPathResource = ClassPathResource("test-docker-compose.yaml")
 
         private val COMPOSE_CONTAINER: KDockerComposeContainer by lazy {
             KDockerComposeContainer(testDockerCompose.file)

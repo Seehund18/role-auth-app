@@ -1,1 +1,2 @@
-rootProject.name = "auth-system"
+rootProject.name = "role-auth-system"
+include("backend")

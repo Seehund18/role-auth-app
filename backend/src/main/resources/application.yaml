@@ -1,9 +1,9 @@
 spring:
   application.name: test-auth-system
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
-    password: test_pass
+    url: ${POSTGRES_JDBC_URL:jdbc:postgresql://localhost:5432/postgres}
+    username: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_PASS:test_pass}
   jpa:
     show-sql: true
   flyway:

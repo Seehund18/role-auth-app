@@ -21,8 +21,6 @@ repositories {
     mavenCentral()
 }
 
-val postgresPassword = "test_pass"
-
 dependencies {
     // Spring
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -61,14 +59,6 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
     testImplementation("org.mockito:mockito-inline:5.2.0")
     testImplementation("org.testcontainers:junit-jupiter")
-}
-
-flyway {
-    url = "jdbc:postgresql://localhost:5432/postgres"
-    user = "postgres"
-    password = postgresPassword
-    locations = arrayOf("classpath:db/migration")
-    schemas = arrayOf("auth_system")
 }
 
 tasks.withType<KotlinCompile> {
