@@ -35,7 +35,7 @@ class JwtTokenHandler(var tokenProps: JwtTokenProps) {
     }
 
     private fun getExpirationDate(tokenDuration: Duration): LocalDateTime {
-        return LocalDateTime.now().plusSeconds(tokenDuration.toSeconds());
+        return LocalDateTime.now().plusSeconds(tokenDuration.toSeconds())
     }
 
     fun getClaimFromToken(claim: AuthClaims, jwtToken: String) : String {

@@ -63,7 +63,7 @@ class AuthService(
             throw PassDoesntMatchException("Wrong password")
         }
 
-        return jwtTokenHandler.generateJwtToken(user);
+        return jwtTokenHandler.generateJwtToken(user)
     }
 
     private fun checkUserPassword(password: CharArray, user: UserEntity): Boolean {
