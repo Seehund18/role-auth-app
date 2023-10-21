@@ -38,7 +38,24 @@ class JwtTokenHandler(var tokenProps: JwtTokenProps) {
         return LocalDateTime.now().plusSeconds(tokenDuration.toSeconds())
     }
 
+    fun getAllClaimsFromToken(jwtToken: String) : Map<String, String> {
+        //TODO Добавить тестов нового API
+        val key = Keys.hmacShaKeyFor(tokenProps.secret.toByteArray())
+
+        try {
+            return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(jwtToken)
+                .body
+                .mapValues { entry -> entry.value.toString() }
+        } catch (ex: Exception) {
+            throw JwtTokenException("Malformed jwt token", ex)
+        }
+    }
+
     fun getClaimFromToken(claim: AuthClaims, jwtToken: String) : String {
+        //TODO Потенциально убрать
         val key = Keys.hmacShaKeyFor(tokenProps.secret.toByteArray())
 
         try {

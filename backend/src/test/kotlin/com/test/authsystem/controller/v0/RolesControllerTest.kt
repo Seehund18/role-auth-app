@@ -11,8 +11,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.any
-
-import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
@@ -53,7 +51,7 @@ constructor(
             .get("/v0/roles/admin")
             .header(HttpHeaders.AUTHORIZATION, "Bearer $jwtToken")
 
-        doNothing().whenever(authService).authorizeRequest(eq(jwtToken), eq(SystemRoles.ADMIN))
+        whenever(authService.authorizeRequest(eq(jwtToken), eq(SystemRoles.ADMIN))).thenReturn(emptyMap())
 
         mockMvc.perform(request)
             .andExpect(MockMvcResultMatchers.status().isOk)
@@ -70,7 +68,7 @@ constructor(
             .get("/v0/roles/reviewer")
             .header(HttpHeaders.AUTHORIZATION, "Bearer $jwtToken")
 
-        doNothing().whenever(authService).authorizeRequest(eq(jwtToken), eq(SystemRoles.REVIEWER))
+        whenever(authService.authorizeRequest(eq(jwtToken), eq(SystemRoles.ADMIN))).thenReturn(emptyMap())
 
         mockMvc.perform(request)
             .andExpect(MockMvcResultMatchers.status().isOk)
@@ -87,7 +85,7 @@ constructor(
             .get("/v0/roles/user")
             .header(HttpHeaders.AUTHORIZATION, "Bearer $jwtToken")
 
-        doNothing().whenever(authService).authorizeRequest(eq(jwtToken), eq(SystemRoles.REVIEWER))
+        whenever(authService.authorizeRequest(eq(jwtToken), eq(SystemRoles.ADMIN))).thenReturn(emptyMap())
 
         mockMvc.perform(request)
             .andExpect(MockMvcResultMatchers.status().isOk)

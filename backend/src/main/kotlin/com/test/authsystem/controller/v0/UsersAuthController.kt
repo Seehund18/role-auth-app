@@ -10,6 +10,7 @@ import com.test.authsystem.model.api.AuthResponse
 import com.test.authsystem.model.api.ChangePassRequest
 import com.test.authsystem.model.api.ChangeRoleRequest
 import com.test.authsystem.model.api.CreateUserRequest
+import com.test.authsystem.model.api.GetUserInfoResponse
 import com.test.authsystem.model.api.StatusResponse
 import com.test.authsystem.service.AuthService
 import com.test.authsystem.service.JwtTokenHandler
@@ -30,6 +31,7 @@ import mu.KotlinLogging
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CrossOrigin
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -57,6 +59,75 @@ class UsersAuthController(
     var jwtTokenHandler: JwtTokenHandler,
     val log: KLogger = KotlinLogging.logger {}
 ) {
+
+    @Operation(summary = "Get user info. Available only to the user issuing request")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200", description = "User info has been retrieved", content = [
+                    (Content(mediaType = "application/json", schema = Schema(implementation = StatusResponse::class)))]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Data from the request isn't correct or valid",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "No JWT token in Authorization header or it's malformed",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "User doesn't have necessary permissions",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            ),
+            ApiResponse(
+                responseCode = "500",
+                description = "Internal error",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StatusResponse::class)
+                )]
+            )
+        ]
+    )
+    @Authorized(SystemRoles.USER)
+    @GetMapping("/{user}")
+    fun getUser(
+        jwtClaims: MutableMap<String, String>,
+        @PathVariable("user") login: String,
+        @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String,
+    ): ResponseEntity<GetUserInfoResponse> {
+        checkJwtAndRequestUsers(authHeader, login)
+        log.info { "Processing request for getting user info: $login" }
+
+        //TODO Добавить тесты нового API
+
+        val role = SystemRoles.parse(jwtClaims[AuthClaims.ROLE.claimName])
+        val (userEntity, endpointList) = userModificationService.getUser(login, role)
+
+        return ResponseEntity.ok()
+            .body(
+                GetUserInfoResponse(
+                    login = userEntity.login,
+                    email = userEntity.email,
+                    birthday = userEntity.birthday,
+                    registrationDate = userEntity.registrationTimestamp.toLocalDate(),
+                    role = userEntity.role.name,
+                    endpoints = endpointList
+                )
+            )
+    }
 
     @Operation(summary = "Create new user. Available to everyone")
     @ApiResponses(
@@ -183,6 +254,7 @@ class UsersAuthController(
     @Authorized(SystemRoles.USER)
     @PutMapping("/{user}/password")
     fun changePassword(
+        jwtClaims: MutableMap<String, String>,
         @PathVariable("user") login: String,
         @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String,
         @RequestBody @Valid changeRequest: ChangePassRequest
@@ -246,6 +318,7 @@ class UsersAuthController(
     @Authorized(SystemRoles.ADMIN)
     @PutMapping("/{user}/role")
     fun changeRole(
+        jwtClaims: MutableMap<String, String>,
         @PathVariable("user") login: String,
         @RequestBody @Valid changeRoleRequest: ChangeRoleRequest
     ): ResponseEntity<StatusResponse> {

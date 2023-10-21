@@ -2,6 +2,7 @@ package com.test.authsystem.service
 
 import com.test.authsystem.db.RolesRepository
 import com.test.authsystem.db.UsersRepository
+import com.test.authsystem.exception.NoEntityWasFound
 import com.test.authsystem.exception.PassDoesntMatchException
 import com.test.authsystem.generatePassEntity
 import com.test.authsystem.generateRoleEntity
@@ -71,7 +72,7 @@ internal class UserModificationServiceTest {
 
         whenever(usersRepo.findByLoginIgnoreCase(any())).thenReturn(null)
 
-        assertThrows(NoSuchElementException::class.java) {
+        assertThrows(NoEntityWasFound::class.java) {
             userModificationService.changePassword(
                 expectedLogin,
                 changePassRequest
@@ -155,7 +156,7 @@ internal class UserModificationServiceTest {
 
         whenever(rolesRepo.findByNameIgnoreCase(eq(newRole))).thenReturn(null)
 
-        assertThrows(NoSuchElementException::class.java) {
+        assertThrows(NoEntityWasFound::class.java) {
             userModificationService.changeUserRole(expectedLogin, changeRoleRequest)
         }
     }
@@ -177,7 +178,7 @@ internal class UserModificationServiceTest {
         )
         whenever(usersRepo.findByLoginIgnoreCase(any())).thenReturn(null)
 
-        assertThrows(NoSuchElementException::class.java) {
+        assertThrows(NoEntityWasFound::class.java) {
             userModificationService.changeUserRole(expectedLogin, changeRoleRequest)
         }
     }

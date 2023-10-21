@@ -6,7 +6,12 @@ class PassDoesntMatchException(message: String) : RuntimeException(message)
 
 class AuthException(message: String) : RuntimeException(message)
 
-class JwtTokenException(message: String?, cause: Throwable?) : RuntimeException(message, cause)
+class JwtTokenException : RuntimeException {
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(message: String?) : super(message)
+}
+
+class NoEntityWasFound(message: String) : RuntimeException(message)
 
 class NotEnoughPermissionsException(message: String) : RuntimeException(message)
 

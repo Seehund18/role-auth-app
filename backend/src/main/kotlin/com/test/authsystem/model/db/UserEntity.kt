@@ -20,7 +20,7 @@ class UserEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
     @Column(nullable = false) var login: String,
     @Column(nullable = false) var email: String,
-    @Column(nullable = true) var registrationTimestamp: LocalDateTime?,
+    @Column(nullable = true) var registrationTimestamp: LocalDateTime,
     @Column(nullable = true) var birthday: LocalDate?,
 
     @ManyToOne(fetch = FetchType.LAZY)

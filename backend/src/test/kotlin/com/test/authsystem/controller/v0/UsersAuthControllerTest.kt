@@ -3,6 +3,7 @@ package com.test.authsystem.controller.v0
 import com.test.authsystem.constants.AuthClaims
 import com.test.authsystem.constants.SystemResponseStatus
 import com.test.authsystem.exception.DuplicateException
+import com.test.authsystem.exception.NoEntityWasFound
 import com.test.authsystem.exception.PassDoesntMatchException
 import com.test.authsystem.exception.UsersDontMatchException
 import com.test.authsystem.generateUserEntity
@@ -19,7 +20,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.HttpHeaders
@@ -324,7 +324,7 @@ constructor(
         @JvmStatic
         fun internalExceptionAndStatus() = listOf(
             Arguments.of(DuplicateException::class.java, HttpStatus.CONFLICT),
-            Arguments.of(NoSuchElementException::class.java, HttpStatus.BAD_REQUEST),
+            Arguments.of(NoEntityWasFound::class.java, HttpStatus.BAD_REQUEST),
             Arguments.of(PassDoesntMatchException::class.java, HttpStatus.BAD_REQUEST),
             Arguments.of(UsersDontMatchException::class.java, HttpStatus.FORBIDDEN),
             Arguments.of(RuntimeException::class.java, HttpStatus.INTERNAL_SERVER_ERROR)

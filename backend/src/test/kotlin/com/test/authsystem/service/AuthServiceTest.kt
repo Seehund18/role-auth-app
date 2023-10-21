@@ -1,9 +1,11 @@
 package com.test.authsystem.service
 
+import com.test.authsystem.constants.AuthClaims
 import com.test.authsystem.constants.SystemRoles
 import com.test.authsystem.db.RolesRepository
 import com.test.authsystem.db.UsersRepository
 import com.test.authsystem.exception.DuplicateException
+import com.test.authsystem.exception.NoEntityWasFound
 import com.test.authsystem.exception.NotEnoughPermissionsException
 import com.test.authsystem.exception.PassDoesntMatchException
 import com.test.authsystem.generatePassEntity
@@ -122,7 +124,7 @@ internal class AuthServiceTest {
 
         whenever(usersRepo.findByLoginIgnoreCase(any())).thenReturn(null)
 
-        Assertions.assertThrows(NoSuchElementException::class.java) { authService.signInUser(authRequest) }
+        Assertions.assertThrows(NoEntityWasFound::class.java) { authService.signInUser(authRequest) }
 
         verify(usersRepo).findByLoginIgnoreCase(eq(expectedLogin))
     }
@@ -156,8 +158,9 @@ internal class AuthServiceTest {
     @MethodSource("successRolePairs")
     fun testAuthorizeRequestSuccess(userRole: SystemRoles, minRequiredRole: SystemRoles) {
         val dumbJwt = "Dumb_jwt_token"
+        val mapWithClaims = mapOf(AuthClaims.ROLE.name.lowercase() to userRole.name)
 
-        whenever(jwtTokenHandler.getClaimFromToken(any(), any())).thenReturn(userRole.name)
+        whenever(jwtTokenHandler.getAllClaimsFromToken(dumbJwt)).thenReturn(mapWithClaims)
         whenever(rolesRepo.findByNameIgnoreCase(any())).thenReturn(
             generateRoleEntity(minRequiredRole.name)
         )
@@ -168,15 +171,16 @@ internal class AuthServiceTest {
         )
 
         authService.authorizeRequest(dumbJwt, minRequiredRole)
-        verify(jwtTokenHandler).getClaimFromToken(any(), eq(dumbJwt))
+        verify(jwtTokenHandler).getAllClaimsFromToken(eq(dumbJwt))
     }
 
     @ParameterizedTest
     @MethodSource("badRolePairs")
     fun testAuthorizeRequestErrorOnInsufficientPermissions(userRole: SystemRoles, minRequiredRole: SystemRoles) {
         val dumbJwt = "Dumb_jwt_token"
+        val mapWithClaims = mapOf(AuthClaims.ROLE.name.lowercase() to userRole.name)
 
-        whenever(jwtTokenHandler.getClaimFromToken(any(), any())).thenReturn(userRole.name)
+        whenever(jwtTokenHandler.getAllClaimsFromToken(eq(dumbJwt))).thenReturn(mapWithClaims)
         whenever(rolesRepo.findByNameIgnoreCase(any())).thenReturn(
             generateRoleEntity(minRequiredRole.name)
         )
@@ -189,6 +193,7 @@ internal class AuthServiceTest {
         Assertions.assertThrows(NotEnoughPermissionsException::class.java) {
             authService.authorizeRequest(dumbJwt, minRequiredRole)
         }
+        verify(jwtTokenHandler).getAllClaimsFromToken(eq(dumbJwt))
     }
 
     private fun generateRolesWithEqualOrMorePriority(role: SystemRoles): List<RoleEntity> {

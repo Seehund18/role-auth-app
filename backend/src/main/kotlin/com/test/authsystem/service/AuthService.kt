@@ -5,6 +5,8 @@ import com.test.authsystem.constants.SystemRoles
 import com.test.authsystem.db.RolesRepository
 import com.test.authsystem.db.UsersRepository
 import com.test.authsystem.exception.DuplicateException
+import com.test.authsystem.exception.JwtTokenException
+import com.test.authsystem.exception.NoEntityWasFound
 import com.test.authsystem.exception.NotEnoughPermissionsException
 import com.test.authsystem.exception.PassDoesntMatchException
 import com.test.authsystem.model.api.AuthRequest
@@ -57,7 +59,7 @@ class AuthService(
     fun signInUser(authRequest: AuthRequest): Pair<String, LocalDateTime> {
         val user =
             usersRepo.findByLoginIgnoreCase(authRequest.login)
-                ?: throw NoSuchElementException("User with given login doesn't exist")
+                ?: throw NoEntityWasFound("User with given login doesn't exist")
 
         if (!checkUserPassword(authRequest.password, user)) {
             throw PassDoesntMatchException("Wrong password")
@@ -72,8 +74,10 @@ class AuthService(
     }
 
     @Transactional
-    fun authorizeRequest(jwtToken: String, minRequiredRole: SystemRoles) {
-        val jwtRole = jwtTokenHandler.getClaimFromToken(AuthClaims.ROLE, jwtToken)
+    fun authorizeRequest(jwtToken: String, minRequiredRole: SystemRoles) : Map<String, String> {
+        //TODO Добавить тестов нового API
+        val claimsMap = jwtTokenHandler.getAllClaimsFromToken(jwtToken)
+        val jwtRole = claimsMap[AuthClaims.ROLE.name.lowercase()] ?: throw JwtTokenException("Malformed jwt token")
 
         val minRequiredRoleEntity = rolesRepo.findByNameIgnoreCase(minRequiredRole.name)
             ?: throw RuntimeException("$minRequiredRole wasn't found")
@@ -85,6 +89,7 @@ class AuthService(
             throw NotEnoughPermissionsException("User's permissions isn't enough to access the endpoint")
         }
 
+        return claimsMap
     }
 
 }

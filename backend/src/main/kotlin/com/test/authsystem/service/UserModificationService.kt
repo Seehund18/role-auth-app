@@ -1,10 +1,13 @@
 package com.test.authsystem.service
 
+import com.test.authsystem.constants.SystemRoles
 import com.test.authsystem.db.RolesRepository
 import com.test.authsystem.db.UsersRepository
+import com.test.authsystem.exception.NoEntityWasFound
 import com.test.authsystem.exception.PassDoesntMatchException
 import com.test.authsystem.model.api.ChangePassRequest
 import com.test.authsystem.model.api.ChangeRoleRequest
+import com.test.authsystem.model.api.Endpoint
 import com.test.authsystem.model.db.PasswordEntity
 import com.test.authsystem.model.db.UserEntity
 import jakarta.transaction.Transactional
@@ -22,8 +25,30 @@ class UserModificationService(
     private val log: KLogger = KotlinLogging.logger {}
 
     @Transactional
+    fun getUser(login: String, userRole: SystemRoles): Pair<UserEntity, List<Endpoint>> {
+        //TODO Добавить тестов нового API
+        val user = usersRepo.findByLoginIgnoreCase(login)
+            ?: throw NoEntityWasFound("User with given login doesn't exist")
+
+        val userRoleEntity = rolesRepo.findByNameIgnoreCase(userRole.name)
+            ?: throw RuntimeException("$userRole wasn't found")
+
+        val roles = rolesRepo.findByPriorityValueGreaterThanEqual(userRoleEntity.priorityValue)
+        val availableEndpoints = roles.flatMap { roleEntity -> roleEntity.endpointsList }
+            .map { endpointEntity ->
+                Endpoint(
+                    description = endpointEntity.description,
+                    url = endpointEntity.url
+                )
+            }
+
+        return user to availableEndpoints
+    }
+
+    @Transactional
     fun changePassword(login: String, changePassRequest: ChangePassRequest): UserEntity {
-        var user = usersRepo.findByLoginIgnoreCase(login) ?: throw NoSuchElementException("User with given login doesn't exist")
+        var user = usersRepo.findByLoginIgnoreCase(login)
+            ?: throw NoEntityWasFound("User with given login doesn't exist")
 
         if (!checkUserPassword(changePassRequest.oldPass, user)) {
             throw PassDoesntMatchException("Wrong password")
@@ -45,11 +70,12 @@ class UserModificationService(
     }
 
     @Transactional
-    fun changeUserRole(login : String, changeRoleRequest: ChangeRoleRequest) : UserEntity {
+    fun changeUserRole(login: String, changeRoleRequest: ChangeRoleRequest): UserEntity {
         log.info { "Changing role of $login to ${changeRoleRequest.newRole}" }
 
-        val newRole = rolesRepo.findByNameIgnoreCase(changeRoleRequest.newRole) ?: throw NoSuchElementException("Role wasn't found")
-        val user = usersRepo.findByLoginIgnoreCase(login) ?: throw NoSuchElementException("User wasn't found")
+        val newRole = rolesRepo.findByNameIgnoreCase(changeRoleRequest.newRole)
+            ?: throw NoEntityWasFound("Role wasn't found")
+        val user = usersRepo.findByLoginIgnoreCase(login) ?: throw NoEntityWasFound("User wasn't found")
         user.role = newRole
 
         return usersRepo.save(user)

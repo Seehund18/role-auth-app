@@ -25,12 +25,15 @@ class UsersRepositoryTest
 constructor(
     var entityManager: TestEntityManager,
     var rolesRepository: RolesRepository,
-    var usersRepository: UsersRepository
+    var usersRepository: UsersRepository,
+    var endpointsRepository: EndpointsRepository
 ) {
 
     @BeforeEach
     fun setup() {
         usersRepository.deleteAll()
+        endpointsRepository.deleteAll()
+        entityManager.flush()
         rolesRepository.deleteAll()
         entityManager.flush()
     }

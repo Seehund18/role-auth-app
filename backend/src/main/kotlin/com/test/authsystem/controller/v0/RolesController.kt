@@ -55,7 +55,7 @@ class RolesController {
     )
     @Authorized(minRole = SystemRoles.ADMIN)
     @GetMapping("/admin")
-    fun adminEndpoint(): ResponseEntity<StatusResponse> {
+    fun adminEndpoint(jwtClaims: MutableMap<String, String>): ResponseEntity<StatusResponse> {
         return ResponseEntity.ok()
             .body(
                 StatusResponse(
@@ -100,7 +100,7 @@ class RolesController {
     )
     @Authorized(minRole = SystemRoles.REVIEWER)
     @GetMapping("/reviewer")
-    fun reviewerEndpoint(): ResponseEntity<StatusResponse> {
+    fun reviewerEndpoint(jwtClaims: MutableMap<String, String>): ResponseEntity<StatusResponse> {
         return ResponseEntity.ok()
             .body(
                 StatusResponse(
@@ -145,7 +145,7 @@ class RolesController {
     )
     @Authorized(minRole = SystemRoles.USER)
     @GetMapping("/user")
-    fun userEndpoint(): ResponseEntity<StatusResponse> {
+    fun userEndpoint(jwtClaims: MutableMap<String, String>): ResponseEntity<StatusResponse> {
         return ResponseEntity.ok()
             .body(
                 StatusResponse(

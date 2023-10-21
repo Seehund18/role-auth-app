@@ -20,14 +20,15 @@ class AuthorizationAspect(val authService: AuthService) {
 
     private val log: KLogger = KotlinLogging.logger {}
 
-    @Before("@annotation(authorized)")
+    @Before("@annotation(authorized) && args(map,..)")
     @Throws(Throwable::class)
-    fun authorizeRequest(joinPoint: JoinPoint, authorized: Authorized) {
+    fun authorizeRequest(joinPoint: JoinPoint, authorized: Authorized, map: MutableMap<String, String>) {
         log.info { "Authorizing request" }
         val minRequiredRole = authorized.minRole
 
         val jwtToken = extractJwtTokenFromHeader(getAuthHeader())
-        authService.authorizeRequest(jwtToken, minRequiredRole)
+        val claimsMap = authService.authorizeRequest(jwtToken, minRequiredRole)
+        map.putAll(claimsMap)
     }
 
     private fun getAuthHeader(): String {

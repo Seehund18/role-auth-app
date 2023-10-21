@@ -21,3 +21,10 @@ VALUES
     ('reviewer', 'someReviwerEmail@mail.com', NOW(), DATE('1995-10-02'), 2, 2),
     ('user', 'simpleUserEmail@gmail.com', NOW(), DATE('1990-05-12'), 3, 3)
 ON CONFLICT DO NOTHING;
+
+INSERT INTO auth_system.role_endpoints (URL, DESCRIPTION, MIN_ROLE_ID)
+VALUES
+    ('/v0/roles/admin', 'Admin business endpoint', 1),
+    ('/v0/roles/reviewer', 'Reviewer business endpoint', 2),
+    ('/v0/roles/user', 'User business endpoint', 3)
+ON CONFLICT DO NOTHING;

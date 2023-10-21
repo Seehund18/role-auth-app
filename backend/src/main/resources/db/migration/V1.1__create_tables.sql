@@ -24,3 +24,12 @@ CREATE TABLE IF NOT EXISTS auth_system.users (
         FOREIGN KEY (PASSWORD_ID)
             REFERENCES auth_system.passwords (id)
 );
+
+CREATE TABLE IF NOT EXISTS auth_system.role_endpoints (
+        ID serial PRIMARY KEY,
+        URL VARCHAR(100) UNIQUE NOT NULL,
+        DESCRIPTION VARCHAR(100) NOT NULL,
+        MIN_ROLE_ID BIGINT NOT NULL,
+        FOREIGN KEY (MIN_ROLE_ID)
+            REFERENCES auth_system.roles (id)
+);

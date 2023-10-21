@@ -8,9 +8,9 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 
 @Entity
-@Table(name = "passwords", schema = "auth_system")
-class PasswordEntity(
+@Table(name = "role_endpoints", schema = "auth_system")
+class EndpointsEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
-    @Column(nullable = false) var passwordHash: ByteArray,
-    @Column(nullable = false) var salt: ByteArray
+    @Column(nullable = false) var url: String,
+    @Column(nullable = false) var description: String
 )
