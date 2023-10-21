@@ -68,4 +68,24 @@ constructor(
         assertEquals(4, rolesRepository.findByPriorityValueLessThanEqual(200).size)
         assertEquals(4, rolesRepository.findByPriorityValueLessThanEqual(300).size)
     }
+
+    @Test
+    fun testFindByPriorityValueGreaterThanEqual() {
+        val roleEntity1 = generateRoleEntity("role1", "Test user", 1)
+        val roleEntity2 = generateRoleEntity("role2", "Test user", 10)
+        val roleEntity3 = generateRoleEntity("role3", "Test user", 100)
+        val roleEntity4 = generateRoleEntity("role4", "Test user", 200)
+        entityManager.persist(roleEntity1)
+        entityManager.persist(roleEntity2)
+        entityManager.persist(roleEntity3)
+        entityManager.persist(roleEntity4)
+        entityManager.flush()
+
+        assertEquals(0, rolesRepository.findByPriorityValueGreaterThanEqual(201).size)
+        assertEquals(1, rolesRepository.findByPriorityValueGreaterThanEqual(200).size)
+        assertEquals(2, rolesRepository.findByPriorityValueGreaterThanEqual(100).size)
+        assertEquals(3, rolesRepository.findByPriorityValueGreaterThanEqual(10).size)
+        assertEquals(4, rolesRepository.findByPriorityValueGreaterThanEqual(1).size)
+        assertEquals(4, rolesRepository.findByPriorityValueGreaterThanEqual(0).size)
+    }
 }

@@ -13,7 +13,6 @@ interface RolesRepository: CrudRepository<RoleEntity, Long> {
     fun findByNameIgnoreCase(roleName: String): RoleEntity?
 
     fun findByPriorityValueLessThanEqual(priorityValue: Int): List<RoleEntity>
-    //TODO Добавить тесты нового API
-    fun findByPriorityValueGreaterThanEqual(priorityValue: Int): List<RoleEntity>
 
+    fun findByPriorityValueGreaterThanEqual(priorityValue: Int): List<RoleEntity>
 }

@@ -158,9 +158,11 @@ internal class AuthServiceTest {
     @MethodSource("successRolePairs")
     fun testAuthorizeRequestSuccess(userRole: SystemRoles, minRequiredRole: SystemRoles) {
         val dumbJwt = "Dumb_jwt_token"
-        val mapWithClaims = mapOf(AuthClaims.ROLE.name.lowercase() to userRole.name)
+        val expectedMapWithClaims = mapOf(AuthClaims.ROLE.name.lowercase() to userRole.name,
+            AuthClaims.LOGIN.name.lowercase() to "someUser",
+            AuthClaims.EMAIL.name.lowercase() to "someEmail@gmail.com")
 
-        whenever(jwtTokenHandler.getAllClaimsFromToken(dumbJwt)).thenReturn(mapWithClaims)
+        whenever(jwtTokenHandler.getAllClaimsFromToken(dumbJwt)).thenReturn(expectedMapWithClaims)
         whenever(rolesRepo.findByNameIgnoreCase(any())).thenReturn(
             generateRoleEntity(minRequiredRole.name)
         )
@@ -170,7 +172,8 @@ internal class AuthServiceTest {
             )
         )
 
-        authService.authorizeRequest(dumbJwt, minRequiredRole)
+        val claims = authService.authorizeRequest(dumbJwt, minRequiredRole)
+        assertEquals(expectedMapWithClaims, claims)
         verify(jwtTokenHandler).getAllClaimsFromToken(eq(dumbJwt))
     }
 

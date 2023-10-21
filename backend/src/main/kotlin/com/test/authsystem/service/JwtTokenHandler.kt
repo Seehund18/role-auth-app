@@ -39,7 +39,6 @@ class JwtTokenHandler(var tokenProps: JwtTokenProps) {
     }
 
     fun getAllClaimsFromToken(jwtToken: String) : Map<String, String> {
-        //TODO Добавить тестов нового API
         val key = Keys.hmacShaKeyFor(tokenProps.secret.toByteArray())
 
         try {

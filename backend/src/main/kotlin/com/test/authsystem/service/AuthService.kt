@@ -75,7 +75,6 @@ class AuthService(
 
     @Transactional
     fun authorizeRequest(jwtToken: String, minRequiredRole: SystemRoles) : Map<String, String> {
-        //TODO Добавить тестов нового API
         val claimsMap = jwtTokenHandler.getAllClaimsFromToken(jwtToken)
         val jwtRole = claimsMap[AuthClaims.ROLE.name.lowercase()] ?: throw JwtTokenException("Malformed jwt token")
 

@@ -69,6 +69,41 @@ internal class JwtTokenHandlerTest {
         assertEquals(expectedRole, jwtTokenHandler.getClaimFromToken(AuthClaims.ROLE, jwtToken))
     }
 
+    @Test
+    fun testGenerateJwtTokenAndGetAllClaimsSuccess() {
+        val currentTimestamp = LocalDateTime.now()
+        val expectedSubject = random.nextLong()
+        val expectedEmailClaim = "testEmail@gmail.com"
+        val expectedLoginClaim = "someLogin"
+        val expectedRole = SystemRoles.REVIEWER.name
+
+        val userEntity = UserEntity(
+            id = expectedSubject,
+            login = expectedLoginClaim,
+            email = expectedEmailClaim,
+            registrationTimestamp = LocalDateTime.now(),
+            birthday = LocalDate.now(),
+            role = RoleEntity(random.nextLong(), expectedRole, "Test role", 10),
+            passwordEntity = PasswordEntity(passwordHash = ByteArray(5), salt = ByteArray(5))
+        )
+
+        val (jwtToken, expirationTimestamp) = jwtTokenHandler.generateJwtToken(userEntity)
+        val claims = Jwts.parserBuilder()
+            .setSigningKey(Keys.hmacShaKeyFor(testSecret.toByteArray()))
+            .build()
+            .parseClaimsJws(jwtToken)
+
+        assertTrue(expirationTimestamp.isAfter(currentTimestamp))
+        assertEquals(testIssuer, claims.body[Claims.ISSUER])
+        assertEquals(expectedSubject.toString(), claims.body[Claims.SUBJECT])
+
+        val claimsMap = jwtTokenHandler.getAllClaimsFromToken(jwtToken)
+
+        assertEquals(expectedEmailClaim, claimsMap[AuthClaims.EMAIL.claimName])
+        assertEquals(expectedLoginClaim, claimsMap[AuthClaims.LOGIN.claimName])
+        assertEquals(expectedRole, claimsMap[AuthClaims.ROLE.claimName])
+    }
+
     @ParameterizedTest
     @ValueSource(strings = ["", "fasfaga", "   ", "3t9ty90tiwq", "fajkgkaf"])
     fun testGetClaimFromTokenErrorOnBadToken(token: String) {
