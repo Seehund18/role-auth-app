@@ -87,15 +87,16 @@ class ScenarioVerifier(
         val testedEndpoint = endpointAndRole.first
         val neededRole = endpointAndRole.second
 
-        // Create user, auth and fail to access admin endpoint
+        // Create user, auth and fail to access admin or reviewer endpoint
         val userLogin = generateRandomString(10)
         val email = "${generateRandomString(5)}@gmail.com"
         val password = generateRandomString(15)
         verifyCreateUser(userLogin, email, password)
-        val userAuth = verifyAuthCall(userLogin, password)
+        var userAuth = verifyAuthCall(userLogin, password)
         verifyRoleEndpointCallForbidden(userAuth.jwtToken, testedEndpoint)
 
         verifyPromoteUser(adminJwtToken, userLogin, neededRole.name)
+        userAuth = verifyAuthCall(userLogin, password)
         verifyRoleEndpointCallSuccess(userAuth.jwtToken, testedEndpoint)
 
         endpointAndCalls.compute(testedEndpoint) { _, count ->
@@ -128,12 +129,10 @@ class ScenarioVerifier(
             .content(createUserRequestBody)
 
         mockMvc.perform(request)
-            .andExpect {
-                MockMvcResultMatchers.status().isCreated
-                MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON)
-                MockMvcResultMatchers.jsonPath("$.status").value(SystemResponseStatus.SUCCESS.name)
-                MockMvcResultMatchers.jsonPath("$.description").isNotEmpty
-            }
+            .andExpect(MockMvcResultMatchers.status().isCreated)
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(SystemResponseStatus.SUCCESS.name))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.description").isNotEmpty)
 
         val createdUser = userRepo.findByLoginIgnoreCase(expectedLogin)
         Assertions.assertNotNull(createdUser?.id)
@@ -159,13 +158,11 @@ class ScenarioVerifier(
             .content(authUserRequestBody)
 
         val response = mockMvc.perform(request)
-            .andExpect {
-                MockMvcResultMatchers.status().isOk
-                MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON)
-                MockMvcResultMatchers.jsonPath("$.status").value(SystemResponseStatus.SUCCESS.name)
-                MockMvcResultMatchers.jsonPath("$.jwtToken").isNotEmpty
-                MockMvcResultMatchers.jsonPath("$.expirationDate").isNotEmpty
-            }
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(SystemResponseStatus.SUCCESS.name))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.jwtToken").isNotEmpty)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.expirationDate").isNotEmpty)
             .andReturn()
             .response
             .contentAsString
@@ -178,12 +175,10 @@ class ScenarioVerifier(
             .header(HttpHeaders.AUTHORIZATION, "Bearer $jwtToken")
 
         mockMvc.perform(request)
-            .andExpect {
-                MockMvcResultMatchers.status().isOk
-                MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON)
-                MockMvcResultMatchers.jsonPath("$.status").value(SystemResponseStatus.SUCCESS.name)
-                MockMvcResultMatchers.jsonPath("$.description").isNotEmpty
-            }
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(SystemResponseStatus.SUCCESS.name))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.description").isNotEmpty)
             .andReturn()
     }
 
@@ -193,19 +188,17 @@ class ScenarioVerifier(
             .header(HttpHeaders.AUTHORIZATION, "Bearer $jwtToken")
 
         mockMvc.perform(request)
-            .andExpect {
-                MockMvcResultMatchers.status().isForbidden
-                MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON)
-                MockMvcResultMatchers.jsonPath("$.status").value(SystemResponseStatus.FAILED.name)
-                MockMvcResultMatchers.jsonPath("$.description").isNotEmpty
-            }
+            .andExpect(MockMvcResultMatchers.status().isForbidden)
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(SystemResponseStatus.FAILED.name))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.description").isNotEmpty)
             .andReturn()
     }
 
     private fun verifyPromoteUser(adminJwtToken: String, login: String, newRole: String) {
         val updateAuthRequestBody = """
             {
-                "newRole": "$newRole",
+                "newRole": "$newRole"
             }
         """
         val request = MockMvcRequestBuilders
@@ -215,12 +208,10 @@ class ScenarioVerifier(
             .content(updateAuthRequestBody)
 
         mockMvc.perform(request)
-            .andExpect {
-                MockMvcResultMatchers.status().isOk
-                MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON)
-                MockMvcResultMatchers.jsonPath("$.status").value(SystemResponseStatus.SUCCESS.name)
-                MockMvcResultMatchers.jsonPath("$.description").isNotEmpty
-            }
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(SystemResponseStatus.SUCCESS.name))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.description").isNotEmpty)
             .andReturn()
     }
 
@@ -238,12 +229,10 @@ class ScenarioVerifier(
             .content(changePassRequestBody)
 
         mockMvc.perform(request)
-            .andExpect {
-                MockMvcResultMatchers.status().isOk
-                MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON)
-                MockMvcResultMatchers.jsonPath("$.status").value(SystemResponseStatus.SUCCESS.name)
-                MockMvcResultMatchers.jsonPath("$.description").isNotEmpty
-            }
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(SystemResponseStatus.SUCCESS.name))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.description").isNotEmpty)
             .andReturn()
     }
 }
