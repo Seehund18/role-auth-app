@@ -1,9 +1,6 @@
-package io.realworld.model
+package com.syakim.authsystemfront.model
 
 import kotlinx.serialization.Serializable
-
-@Serializable
-data class UserDto(val user: User)
 
 @Serializable
 data class User(
@@ -11,12 +8,12 @@ data class User(
     val token: String? = null,
     val login: String? = null,
     val password: String? = null,
-    val birthday: String? = null
+    val birthday: String? = null,
+    val role: String? = null,
+    val endpoints: List<Endpoint> = emptyList()
 )
-
 @Serializable
-data class AuthResponse(
-    val status: String,
-    val jwtToken: String,
-    val expirationDate: String
+data class Endpoint(
+    val url: String?,
+    val description: String?
 )

@@ -16,23 +16,19 @@ import io.kvision.state.bind
 class RoleAuthSystemFrontApp : Application() {
 
     override fun start() {
-        RoleAuthManager.initialize()
         Pace.init(io.kvision.require("pace-progressbar/themes/green/pace-theme-bounce.css"))
         Pace.setOptions(PaceOptions(manual = true))
+        RoleAuthManager.initialize()
         root("kvapp") {
-//            header().bind(ConduitManager.conduitStore) { state ->
-//                headerNav(state)
-//            }
             main().bind(RoleAuthManager.appReduxStore) { state ->
                 if (!state.appLoading) {
                     when (state.view) {
-                        View.HOME -> {
+                        View.PROFILE -> {
                             homePage(state)
                         }
                         View.LOGIN -> {
                             loginPage(state)
                         }
-                        else -> {homePage(state)}
                     }
                 }
             }

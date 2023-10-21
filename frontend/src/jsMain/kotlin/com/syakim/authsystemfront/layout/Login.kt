@@ -13,7 +13,6 @@ import io.kvision.html.button
 import io.kvision.html.div
 import io.kvision.html.fieldset
 import io.kvision.html.h1
-import io.kvision.html.ul
 
 fun Container.loginPage(state: AppState) {
     div(className = "auth-page") {
@@ -21,9 +20,6 @@ fun Container.loginPage(state: AppState) {
             div(className = "row") {
                 div(className = "col-md-6 offset-md-3 col-xs-12") {
                     h1("Sign in", className = "text-xs-center")
-//                    p(className = "text-xs-center") {
-//                        link("Need an account?", "#${View.REGISTER.url}")
-//                    }
                     if (!state.loginError.isNullOrEmpty()) {
                         div(state.loginError, className = "error-messages")
                     }
