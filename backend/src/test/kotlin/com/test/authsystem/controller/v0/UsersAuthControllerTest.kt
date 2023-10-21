@@ -6,7 +6,9 @@ import com.test.authsystem.exception.DuplicateException
 import com.test.authsystem.exception.NoEntityWasFound
 import com.test.authsystem.exception.PassDoesntMatchException
 import com.test.authsystem.exception.UsersDontMatchException
+import com.test.authsystem.generateRoleEntity
 import com.test.authsystem.generateUserEntity
+import com.test.authsystem.model.api.Endpoint
 import com.test.authsystem.service.AuthService
 import com.test.authsystem.service.JwtTokenHandler
 import com.test.authsystem.service.UserModificationService
@@ -48,6 +50,65 @@ constructor(
 
     @MockBean
     private lateinit var jwtTokenHandler: JwtTokenHandler
+
+    @Test
+    fun testGetUserSuccess() {
+        val expectedLogin = "testLogin"
+        val expectedEmail = "testEmail@gmail.com"
+        val expectedRole = "testRole"
+        val expectedUserEntity = generateUserEntity(
+            login = expectedLogin,
+            email = expectedEmail,
+            passEntity = null,
+            roleEntity = generateRoleEntity(name = expectedRole)
+        )
+        val expectedEndpoints = listOf(
+            Endpoint(
+                description = "stubEndpoint",
+                url = "someUrl"
+            ), Endpoint(
+                description = "stubEndpoint2",
+                url = "someUrl2"
+            )
+        )
+
+        val jwtToken = "dumb_token"
+        whenever(userModificationService.getUserInfo(eq(expectedLogin)))
+            .thenReturn(expectedUserEntity to expectedEndpoints)
+        whenever(jwtTokenHandler.getClaimFromToken(eq(AuthClaims.LOGIN), eq(jwtToken))).thenReturn(expectedLogin)
+
+        val request = MockMvcRequestBuilders
+            .get("/v0/users/$expectedLogin")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $jwtToken")
+
+        mockMvc.perform(request)
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.login").value(expectedLogin))
+            .andExpect(jsonPath("$.email").value(expectedEmail))
+            .andExpect(jsonPath("$.birthday").isNotEmpty)
+            .andExpect(jsonPath("$.registrationDate").isNotEmpty)
+            .andExpect(jsonPath("$.role").value(expectedRole))
+            .andExpect(jsonPath("$.endpoints[*]").isArray)
+            .andExpect(jsonPath("$.endpoints[0].url").value("someUrl"))
+            .andExpect(jsonPath("$.endpoints[0].description").value("stubEndpoint"))
+            .andExpect(jsonPath("$.endpoints[1].url").value("someUrl2"))
+            .andExpect(jsonPath("$.endpoints[1].description").value("stubEndpoint2"))
+    }
+
+    @Test
+    fun testGetUserErrorOnTokenAbsence() {
+        val expectedLogin = "testLogin"
+
+        val request = MockMvcRequestBuilders
+            .get("/v0/users/$expectedLogin")
+
+        mockMvc.perform(request)
+            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.status").value(SystemResponseStatus.FAILED.name))
+            .andExpect(jsonPath("$.description").isNotEmpty)
+    }
 
     @Test
     fun testAddUserSuccess() {
@@ -274,7 +335,7 @@ constructor(
 
     @ParameterizedTest
     @NullAndEmptySource
-    fun testChangeUserRoleBadRequestError(newRole : String?) {
+    fun testChangeUserRoleBadRequestError(newRole: String?) {
         val user = "newUser"
 
         val changeRoleRequestBody = """

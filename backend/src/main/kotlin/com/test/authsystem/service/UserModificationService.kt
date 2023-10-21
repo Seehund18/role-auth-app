@@ -1,6 +1,5 @@
 package com.test.authsystem.service
 
-import com.test.authsystem.constants.SystemRoles
 import com.test.authsystem.db.RolesRepository
 import com.test.authsystem.db.UsersRepository
 import com.test.authsystem.exception.NoEntityWasFound
@@ -25,15 +24,11 @@ class UserModificationService(
     private val log: KLogger = KotlinLogging.logger {}
 
     @Transactional
-    fun getUser(login: String, userRole: SystemRoles): Pair<UserEntity, List<Endpoint>> {
-        //TODO Добавить тестов нового API
+    fun getUserInfo(login: String): Pair<UserEntity, List<Endpoint>> {
         val user = usersRepo.findByLoginIgnoreCase(login)
             ?: throw NoEntityWasFound("User with given login doesn't exist")
 
-        val userRoleEntity = rolesRepo.findByNameIgnoreCase(userRole.name)
-            ?: throw RuntimeException("$userRole wasn't found")
-
-        val roles = rolesRepo.findByPriorityValueGreaterThanEqual(userRoleEntity.priorityValue)
+        val roles = rolesRepo.findByPriorityValueGreaterThanEqual(user.role.priorityValue)
         val availableEndpoints = roles.flatMap { roleEntity -> roleEntity.endpointsList }
             .map { endpointEntity ->
                 Endpoint(

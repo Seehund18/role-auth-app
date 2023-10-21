@@ -111,10 +111,7 @@ class UsersAuthController(
         checkJwtAndRequestUsers(authHeader, login)
         log.info { "Processing request for getting user info: $login" }
 
-        //TODO Добавить тесты нового API
-
-        val role = SystemRoles.parse(jwtClaims[AuthClaims.ROLE.claimName])
-        val (userEntity, endpointList) = userModificationService.getUser(login, role)
+        val (userEntity, endpointList) = userModificationService.getUserInfo(login)
 
         return ResponseEntity.ok()
             .body(

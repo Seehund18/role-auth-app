@@ -1,5 +1,6 @@
 package com.test.authsystem
 
+import com.test.authsystem.model.db.EndpointsEntity
 import com.test.authsystem.model.db.PasswordEntity
 import com.test.authsystem.model.db.RoleEntity
 import com.test.authsystem.model.db.UserEntity
@@ -38,19 +39,28 @@ fun generateUserEntity(
 }
 
 fun generateRoleEntity(): RoleEntity {
-    return generateRoleEntity(null, null, null)
+    return generateRoleEntity(null, null, null, null)
 }
 
 fun generateRoleEntity(name: String?): RoleEntity {
-    return generateRoleEntity(name, null, null)
+    return generateRoleEntity(name, null, null, null)
+}
+
+fun generateRoleEntity(name: String?, endpoint: List<EndpointsEntity>?): RoleEntity {
+    return generateRoleEntity(name, null, null, endpoint)
 }
 
 fun generateRoleEntity(name: String?, description: String?, priorityValue: Int?): RoleEntity {
+    return generateRoleEntity(name, description, priorityValue, null)
+}
+
+fun generateRoleEntity(name: String?, description: String?, priorityValue: Int?, endpointList: List<EndpointsEntity>?): RoleEntity {
     return RoleEntity(
         id = null,
         name = name ?: "testRole",
         description = description ?: "testDesc",
-        priorityValue = priorityValue ?: 100
+        priorityValue = priorityValue ?: 100,
+        endpointsList = endpointList ?: emptyList()
     )
 }
 

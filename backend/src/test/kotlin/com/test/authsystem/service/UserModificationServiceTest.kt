@@ -1,5 +1,6 @@
 package com.test.authsystem.service
 
+import com.test.authsystem.constants.SystemRoles
 import com.test.authsystem.db.RolesRepository
 import com.test.authsystem.db.UsersRepository
 import com.test.authsystem.exception.NoEntityWasFound
@@ -9,11 +10,18 @@ import com.test.authsystem.generateRoleEntity
 import com.test.authsystem.generateUserEntity
 import com.test.authsystem.model.api.ChangePassRequest
 import com.test.authsystem.model.api.ChangeRoleRequest
+import com.test.authsystem.model.db.EndpointsEntity
+import com.test.authsystem.model.db.RoleEntity
 import java.time.LocalDate
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 
 import org.mockito.Mockito
 import org.mockito.kotlin.any
@@ -28,6 +36,71 @@ internal class UserModificationServiceTest {
     private val passHashingService = Mockito.mock(PassHashingService::class.java)
 
     private val userModificationService = UserModificationService(passHashingService, rolesRepo, usersRepo)
+
+    @ParameterizedTest
+    @MethodSource("roleAndExpectedEndpoints")
+    fun testGetUserInfoSuccess(userRole: SystemRoles, expectedEndpoints: List<String>) {
+        val expectedLogin = "testLogin"
+        val expectedEmail = "testEmail"
+        val testPassHash = "somePassHash"
+        val expectedBirthday = LocalDate.now()
+
+        val passwordEntity = generatePassEntity(passHash = testPassHash)
+        whenever(usersRepo.findByLoginIgnoreCase(any())).thenReturn(
+            generateUserEntity(
+                login = expectedLogin,
+                email = expectedEmail,
+                passEntity = passwordEntity,
+                roleEntity = generateRoleEntity(userRole.name)
+            )
+        )
+
+        whenever(rolesRepo.findByPriorityValueGreaterThanEqual(any())).thenReturn(
+            generateRolesWithEqualOrLessPriority(userRole)
+        )
+
+        val (userEntity, endpoints) = userModificationService.getUserInfo(expectedLogin)
+
+        assertEquals(expectedLogin, userEntity.login)
+        assertEquals(expectedEmail, userEntity.email)
+        assertEquals(expectedBirthday, userEntity.birthday)
+        assertArrayEquals(testPassHash.toByteArray(), userEntity.passwordEntity.passwordHash)
+        assertTrue(endpoints.map { endpoint -> endpoint.url }.containsAll(expectedEndpoints))
+    }
+
+    private fun generateRolesWithEqualOrLessPriority(role: SystemRoles): List<RoleEntity> {
+        val admin = generateRoleEntity(SystemRoles.ADMIN.name, listOf(EndpointsEntity(url = "/api/admin", description = "Admin endpoint")))
+        val reviewer = generateRoleEntity(SystemRoles.REVIEWER.name, listOf(EndpointsEntity(url = "/api/reviewer", description = "Reviewer endpoint")))
+        val user = generateRoleEntity(SystemRoles.USER.name, listOf(EndpointsEntity(url = "/api/user", description = "User endpoint")))
+
+        return when (role) {
+            SystemRoles.ADMIN -> listOf(admin, reviewer, user)
+            SystemRoles.REVIEWER -> listOf(reviewer, user)
+            SystemRoles.USER-> listOf(user)
+        }
+    }
+
+    companion object {
+        @JvmStatic
+        fun roleAndExpectedEndpoints() = listOf(
+            Arguments.of(SystemRoles.ADMIN, listOf("/api/admin", "/api/reviewer", "/api/user")),
+            Arguments.of(SystemRoles.REVIEWER, listOf("/api/reviewer", "/api/user")),
+            Arguments.of(SystemRoles.USER, listOf("/api/user"))
+        )
+    }
+
+    @ParameterizedTest
+    @MethodSource("roleAndExpectedEndpoints")
+    fun testGetUserErrorOnUserAbsence(userRole: SystemRoles, expectedEndpoints: List<String>) {
+        val expectedLogin = "testLogin"
+
+        whenever(usersRepo.findByLoginIgnoreCase(any())).thenReturn(null)
+
+        assertThrows(NoEntityWasFound::class.java) {
+            userModificationService.getUserInfo(expectedLogin)
+        }
+        verify(usersRepo).findByLoginIgnoreCase(eq(expectedLogin))
+    }
 
     @Test
     fun testChangePasswordSuccess() {
