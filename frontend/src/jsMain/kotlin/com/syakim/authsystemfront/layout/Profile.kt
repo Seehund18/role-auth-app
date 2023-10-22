@@ -1,7 +1,10 @@
 package com.syakim.authsystemfront.layout
 
 import com.syakim.authsystemfront.AppState
+import com.syakim.authsystemfront.RoleAuthManager
 import io.kvision.core.Container
+import io.kvision.html.ButtonStyle
+import io.kvision.html.button
 import io.kvision.html.div
 import io.kvision.html.h1
 import io.kvision.html.p
@@ -30,6 +33,9 @@ fun Container.homePage(state: AppState) {
                         div("No endpoints here...", className = "article-preview")
                     }
                 }
+            }
+            button("Click here to logout.", style = ButtonStyle.OUTLINEDANGER).onClick {
+                RoleAuthManager.logout()
             }
         }
     }

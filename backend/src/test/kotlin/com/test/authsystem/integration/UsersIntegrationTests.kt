@@ -42,6 +42,10 @@ constructor(
     }
 
     @Test
+    fun contextLoads() {
+    }
+
+    @Test
     @DisplayName("Create users scenario - create multiple users")
     fun testAddMultipleUsersInParallelSuccess() = runBlocking {
         val jobs = mutableListOf<Deferred<Any>>()

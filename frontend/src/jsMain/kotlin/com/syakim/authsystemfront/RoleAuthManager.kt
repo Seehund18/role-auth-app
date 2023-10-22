@@ -70,6 +70,13 @@ object RoleAuthManager : CoroutineScope by CoroutineScope(Dispatchers.Default + 
         appReduxStore.dispatch(AppAction.LoginPage)
     }
 
+    fun logout() {
+        removeFromLocalStorage(JWT_TOKEN)
+        removeFromLocalStorage(USER)
+        appReduxStore.dispatch(AppAction.Logout)
+        routing.navigate(View.LOGIN.url)
+    }
+
     fun profilePage() {
         appReduxStore.dispatch(AppAction.ProfilePage)
         val state = appReduxStore.getState()
