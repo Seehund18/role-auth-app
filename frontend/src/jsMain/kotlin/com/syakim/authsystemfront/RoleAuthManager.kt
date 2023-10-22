@@ -1,6 +1,7 @@
 package com.syakim.authsystemfront
 
 import com.syakim.authsystemfront.helpers.withProgress
+import com.syakim.authsystemfront.model.Endpoint
 import io.kvision.redux.createTypedReduxStore
 import io.kvision.rest.RemoteRequestException
 
@@ -66,8 +67,28 @@ object RoleAuthManager : CoroutineScope by CoroutineScope(Dispatchers.Default + 
         }
     }
 
+    fun loadBusinessEndpoint(businessEndpoint: Endpoint) {
+        appReduxStore.dispatch(AppAction.BusinessLoading(businessEndpoint))
+        withProgress {
+            val statusResponse = Api.sendRoleRequest(businessEndpoint.url)
+            println(statusResponse)
+            appReduxStore.dispatch(AppAction.BusinessLoaded(statusResponse))
+            routing.navigate(View.BUSINESS.url)
+        }
+    }
+
     fun loginPage() {
         appReduxStore.dispatch(AppAction.LoginPage)
+    }
+
+    fun profilePage() {
+        appReduxStore.dispatch(AppAction.ProfilePage)
+        val state = appReduxStore.getState()
+        loadEndpoints(state.user?.login)
+    }
+
+    fun businessPage() {
+        appReduxStore.dispatch(AppAction.BusinessPage)
     }
 
     fun logout() {
@@ -75,12 +96,6 @@ object RoleAuthManager : CoroutineScope by CoroutineScope(Dispatchers.Default + 
         removeFromLocalStorage(USER)
         appReduxStore.dispatch(AppAction.Logout)
         routing.navigate(View.LOGIN.url)
-    }
-
-    fun profilePage() {
-        appReduxStore.dispatch(AppAction.ProfilePage)
-        val state = appReduxStore.getState()
-        loadEndpoints(state.user?.login)
     }
 
     private fun loadEndpoints(username: String?) {

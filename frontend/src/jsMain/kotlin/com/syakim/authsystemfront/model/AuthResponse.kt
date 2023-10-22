@@ -8,3 +8,9 @@ data class AuthResponse(
     val jwtToken: String,
     val expirationDate: String
 )
+
+@Serializable
+data class StatusResponse(
+    val status: String,
+    val description: String
+)

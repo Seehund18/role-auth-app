@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "Roles API", description = "Role protected endpoints")
 @RestController
 @RequestMapping("/v0/roles")
+@CrossOrigin(origins = ["http://localhost:3000", "http://localhost:8090"])
 class RolesController {
 
     @Operation(summary = "ADMIN protected endpoint")

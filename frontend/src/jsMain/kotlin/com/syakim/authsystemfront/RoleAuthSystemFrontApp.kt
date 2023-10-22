@@ -1,5 +1,6 @@
 package com.syakim.authsystemfront
 
+import com.syakim.authsystemfront.layout.businessPage
 import com.syakim.authsystemfront.layout.homePage
 import com.syakim.authsystemfront.layout.loginPage
 import io.kvision.Application
@@ -28,6 +29,9 @@ class RoleAuthSystemFrontApp : Application() {
                         }
                         View.LOGIN -> {
                             loginPage(state)
+                        }
+                        View.BUSINESS -> {
+                            businessPage(state)
                         }
                     }
                 }

@@ -1,5 +1,6 @@
 package com.syakim.authsystemfront.layout
 
+import com.syakim.authsystemfront.Api
 import com.syakim.authsystemfront.AppState
 import com.syakim.authsystemfront.RoleAuthManager
 import io.kvision.core.Container
@@ -7,6 +8,8 @@ import io.kvision.html.ButtonStyle
 import io.kvision.html.button
 import io.kvision.html.div
 import io.kvision.html.h1
+import io.kvision.html.h2
+import io.kvision.html.link
 import io.kvision.html.p
 
 fun Container.homePage(state: AppState) {
@@ -23,10 +26,14 @@ fun Container.homePage(state: AppState) {
                     if (state.endpointsLoading) {
                         div("Loading available endpoints...", className = "article-preview")
                     } else if (state.availableEndpoints.isNotEmpty()) {
-                        state.availableEndpoints.forEach {
+                        state.availableEndpoints.forEach { endpoint ->
                             div(className = "article-preview") {
-                                h1(content = it.url)
-                                p(content = it.description)
+                                h2(content = endpoint.description)
+                                link("${endpoint.url}", Api.BASE_URL + endpoint.url, className = "nav-link")
+                                    .onClick {
+                                        it.preventDefault()
+                                        RoleAuthManager.loadBusinessEndpoint(endpoint)
+                                    }
                             }
                         }
                     } else {
@@ -34,7 +41,7 @@ fun Container.homePage(state: AppState) {
                     }
                 }
             }
-            button("Click here to logout.", style = ButtonStyle.OUTLINEDANGER).onClick {
+            button("Click here to logout", style = ButtonStyle.OUTLINEDANGER).onClick {
                 RoleAuthManager.logout()
             }
         }

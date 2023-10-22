@@ -5,12 +5,15 @@ import io.kvision.rest.RestClient
 import io.kvision.rest.call
 import io.kvision.rest.post
 import com.syakim.authsystemfront.model.AuthResponse
+import com.syakim.authsystemfront.model.StatusResponse
 import com.syakim.authsystemfront.model.User
 import kotlinx.coroutines.await
 
 object Api {
 
-    const val API_URL = "http://localhost:8080/v0"
+    const val BASE_URL = "http://localhost:8080"
+    const val AUTH_ENDPOINT = "/v0/users/auth"
+    const val GET_USER_INFO_ENDPOINT = "/v0/users"
 
     private val restClient = RestClient()
 
@@ -26,7 +29,7 @@ object Api {
             password = password
         )
         val response = restClient.post<AuthResponse, User>(
-            "$API_URL/users/auth",
+            BASE_URL + AUTH_ENDPOINT,
             user
         ).await()
 
@@ -35,7 +38,13 @@ object Api {
 
     suspend fun getUserInfo(username: String?): User {
         return restClient.call<User>(
-            "$API_URL/users/$username"
+            "${BASE_URL + GET_USER_INFO_ENDPOINT}/$username"
+        ) { headers = ::authRequest }.await()
+    }
+
+    suspend fun sendRoleRequest(roleEndpoint: String?): StatusResponse {
+        return restClient.call<StatusResponse>(
+            BASE_URL + roleEndpoint
         ) { headers = ::authRequest }.await()
     }
 }

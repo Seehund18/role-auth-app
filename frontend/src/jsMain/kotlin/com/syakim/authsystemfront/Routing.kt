@@ -6,6 +6,7 @@ import io.kvision.routing.Routing
 enum class View(val url: String) {
     PROFILE("/profile"),
     LOGIN("/login"),
+    BUSINESS("/business")
 }
 
 lateinit var routing: Routing
@@ -18,5 +19,8 @@ fun initializeRoutes(): Navigo {
         })
         .on(View.PROFILE.url, { _ ->
             RoleAuthManager.profilePage()
+        })
+        .on(View.BUSINESS.url, { _ ->
+            RoleAuthManager.businessPage()
         })
 }
