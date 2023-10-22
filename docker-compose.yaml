@@ -22,3 +22,11 @@ services:
       - 8080:8080
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  role-auth-system-frontend:
+    image: role-auth-system-frontend:latest
+    restart: always
+    ports:
+      - 8090:80
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

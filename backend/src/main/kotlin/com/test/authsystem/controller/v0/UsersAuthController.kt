@@ -52,7 +52,7 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "User API", description = "Actions with users")
 @RestController
 @RequestMapping("/v0/users")
-@CrossOrigin(origins = ["http://localhost:3000"])
+@CrossOrigin(origins = ["http://localhost:3000", "http://localhost:8090"])
 class UsersAuthController(
     var authService: AuthService,
     var userModificationService: UserModificationService,
