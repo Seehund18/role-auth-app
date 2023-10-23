@@ -10,7 +10,6 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 
-
 @Entity
 @Table(name = "roles", schema = "auth_system")
 class RoleEntity(

@@ -13,7 +13,6 @@ import io.kvision.panel.root
 import io.kvision.startApplication
 import io.kvision.state.bind
 
-
 class RoleAuthSystemFrontApp : Application() {
 
     override fun start() {

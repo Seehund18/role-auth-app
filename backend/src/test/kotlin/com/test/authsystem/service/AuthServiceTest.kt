@@ -4,7 +4,6 @@ import com.test.authsystem.constants.AuthClaims
 import com.test.authsystem.constants.SystemRoles
 import com.test.authsystem.db.RolesRepository
 import com.test.authsystem.db.UsersRepository
-import com.test.authsystem.exception.DuplicateException
 import com.test.authsystem.exception.NoEntityWasFound
 import com.test.authsystem.exception.NotEnoughPermissionsException
 import com.test.authsystem.exception.PassDoesntMatchException
@@ -12,18 +11,14 @@ import com.test.authsystem.generatePassEntity
 import com.test.authsystem.generateRoleEntity
 import com.test.authsystem.generateUserEntity
 import com.test.authsystem.model.api.AuthRequest
-import com.test.authsystem.model.api.CreateUserRequest
 import com.test.authsystem.model.db.RoleEntity
-import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq

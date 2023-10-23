@@ -6,7 +6,6 @@ import com.test.authsystem.service.JwtTokenHandler
 import com.test.authsystem.service.UserService
 import java.time.LocalDateTime
 import org.junit.jupiter.api.Test
-
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
