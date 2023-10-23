@@ -268,7 +268,7 @@ class UsersAuthController(
     private fun checkJwtAndRequestUsers(authHeader: String, login: String) {
         val jwtToken = extractJwtTokenFromHeader(authHeader)
         val jwtUser = jwtTokenHandler.getClaimFromToken(AuthClaims.LOGIN, jwtToken)
-        if (jwtUser.lowercase() != login.lowercase()) throw UsersDontMatchException("Other users can't be modified")
+        if (jwtUser.lowercase() != login.lowercase()) throw UsersDontMatchException("Other users can't be changed")
     }
 
     @Operation(summary = "Change user's role. Available only to the admin")

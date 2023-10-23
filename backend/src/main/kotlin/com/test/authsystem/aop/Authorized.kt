@@ -4,5 +4,4 @@ import com.test.authsystem.constants.SystemRoles
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class Authorized(val minRole: SystemRoles) {
-}
+annotation class Authorized(val minRole: SystemRoles)
