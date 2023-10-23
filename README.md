@@ -25,10 +25,16 @@ Used tech stack:
 It builds both frontend and backend using `./gradlew`, builds docker image for them and run all the services using `docker-compose`.
 
 Prerequisites:
+- JDK17 must be installed on your machine
 - Docker must be installed on your machine
 - 8080 port must be available for backend
 - 5432 port must be available for postgres
 - 8090 port must be available for frontend
+
+Please keep in mind, that for some systems script permissions must be changed before running it
+```bash
+chmod u+wx,o+wx ./build-and-run.sh
+```
 
 ### URLs
 

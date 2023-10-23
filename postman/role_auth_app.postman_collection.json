@@ -7,14 +7,14 @@
 	},
 	"item": [
 		{
-			"name": "Get user info",
+			"name": "Get user info (Requires Bearer token)",
 			"request": {
 				"auth": {
 					"type": "bearer",
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhdXRoLXN5c3RlbSIsInN1YiI6IjQiLCJyb2xlIjoiVXNlciIsImlzcyI6ImF1dGgtc3lzdGVtIiwiZXhwIjoxNjk3OTE5Mjk2LCJ1c2VyIjoiZGViaWwiLCJlbWFpbCI6Im15QGdtYWlsLmNvbSJ9.JscyqStI4ozNMnyjNOD2M9mbsUiStH32hnGL7l_RKh4",
+							"value": "",
 							"type": "string"
 						}
 					]
@@ -79,7 +79,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"login\": \"newUser\",\r\n    \"password\": \"newUser\"\r\n}",
+					"raw": "{\r\n    \"login\": \"admin\",\r\n    \"password\": \"notJustSimpleAdmin\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -103,7 +103,7 @@
 			"response": []
 		},
 		{
-			"name": "Update user password",
+			"name": "Update user password (Requires Bearer token)",
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -119,7 +119,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"oldPass\": \"brandNewPass\",\r\n    \"newPass\": \"brandNewPass\"\r\n}",
+					"raw": "{\r\n    \"oldPass\": \"newUserPass\",\r\n    \"newPass\": \"newPass\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -150,14 +150,14 @@
 			"response": []
 		},
 		{
-			"name": "Update user role",
+			"name": "Update user role (Requires Bearer token)",
 			"request": {
 				"auth": {
 					"type": "bearer",
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhdXRoLXN5c3RlbSIsInN1YiI6IjEiLCJyb2xlIjoiQWRtaW4iLCJpc3MiOiJhdXRoLXN5c3RlbSIsImV4cCI6MTY5NzcyMzg0MywidXNlciI6ImFkbWluIiwiZW1haWwiOiJ5YWtpbXljaGV2QGdtYWlsLmNvbSJ9.R7c7v01lOob24XZh2hn9fGzvl0aJ4Aa1_4gVEQhHVow",
+							"value": "",
 							"type": "string"
 						}
 					]
@@ -189,7 +189,7 @@
 					"variable": [
 						{
 							"key": "user",
-							"value": "newUser2"
+							"value": "newUser"
 						}
 					]
 				}
@@ -197,7 +197,7 @@
 			"response": []
 		},
 		{
-			"name": "Get admin",
+			"name": "Get admin (Requires Bearer token)",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
 			},
@@ -207,7 +207,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhdXRoLXN5c3RlbSIsInN1YiI6IjUiLCJyb2xlIjoiUmV2aWV3ZXIiLCJpc3MiOiJhdXRoLXN5c3RlbSIsImV4cCI6MTY5NzcyNDAyOCwidXNlciI6Im5ld1VzZXIyIiwiZW1haWwiOiJuZXdVc2VyMkBnbWFpbC5jb20ifQ.cOQ88OZJ880hdrZuXr47cQn32PyphfpuMmCBVzsyfhE",
+							"value": "",
 							"type": "string"
 						}
 					]
@@ -240,14 +240,14 @@
 			"response": []
 		},
 		{
-			"name": "Get reviewer",
+			"name": "Get reviewer (Requires Bearer token)",
 			"request": {
 				"auth": {
 					"type": "bearer",
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhdXRoLXN5c3RlbSIsInN1YiI6IjUiLCJyb2xlIjoiUmV2aWV3ZXIiLCJpc3MiOiJhdXRoLXN5c3RlbSIsImV4cCI6MTY5NzcyNDAyOCwidXNlciI6Im5ld1VzZXIyIiwiZW1haWwiOiJuZXdVc2VyMkBnbWFpbC5jb20ifQ.cOQ88OZJ880hdrZuXr47cQn32PyphfpuMmCBVzsyfhE",
+							"value": "",
 							"type": "string"
 						}
 					]
@@ -271,7 +271,7 @@
 			"response": []
 		},
 		{
-			"name": "Get user",
+			"name": "Get user (Requires Bearer token)",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
 			},
@@ -281,7 +281,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhdXRoLXN5c3RlbSIsInN1YiI6IjUiLCJyb2xlIjoiUmV2aWV3ZXIiLCJpc3MiOiJhdXRoLXN5c3RlbSIsImV4cCI6MTY5NzcyNDAyOCwidXNlciI6Im5ld1VzZXIyIiwiZW1haWwiOiJuZXdVc2VyMkBnbWFpbC5jb20ifQ.cOQ88OZJ880hdrZuXr47cQn32PyphfpuMmCBVzsyfhE",
+							"value": "",
 							"type": "string"
 						}
 					]

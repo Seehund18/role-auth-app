@@ -2,6 +2,7 @@
 
 set -e
 
+chmod u+wx,o+wx ./gradlew
 ./gradlew clean build
 
 cd ./backend
