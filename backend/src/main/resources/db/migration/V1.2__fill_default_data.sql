@@ -17,7 +17,7 @@ ON CONFLICT DO NOTHING;
 
 INSERT INTO auth_system.users (LOGIN, EMAIL, REGISTRATION_TIMESTAMP, BIRTHDAY, ROLE_ID, PASSWORD_ID)
 VALUES
-    ('admin', 'yakimychev@gmail.com', NOW(), DATE('1997-08-26'), 1, 1),
+    ('admin', 'someAdmin@gmail.com', NOW(), DATE('1997-08-26'), 1, 1),
     ('reviewer', 'someReviwerEmail@mail.com', NOW(), DATE('1995-10-02'), 2, 2),
     ('user', 'simpleUserEmail@gmail.com', NOW(), DATE('1990-05-12'), 3, 3)
 ON CONFLICT DO NOTHING;

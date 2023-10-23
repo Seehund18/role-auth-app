@@ -1,0 +1,317 @@
+{
+	"info": {
+		"_postman_id": "51dc78dd-df06-4c30-84a4-67e39256a719",
+		"name": "Role auth app",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30199516"
+	},
+	"item": [
+		{
+			"name": "Get user info",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhdXRoLXN5c3RlbSIsInN1YiI6IjQiLCJyb2xlIjoiVXNlciIsImlzcyI6ImF1dGgtc3lzdGVtIiwiZXhwIjoxNjk3OTE5Mjk2LCJ1c2VyIjoiZGViaWwiLCJlbWFpbCI6Im15QGdtYWlsLmNvbSJ9.JscyqStI4ozNMnyjNOD2M9mbsUiStH32hnGL7l_RKh4",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/v0/users/:user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"v0",
+						"users",
+						":user"
+					],
+					"variable": [
+						{
+							"key": "user",
+							"value": "admin"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"login\": \"newUser\",\r\n    \"email\": \"newUser@gmail.com\",\r\n    \"password\": \"newUserPass\",\r\n    \"birthday\": \"1999-10-11\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/v0/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"v0",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Auth user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"login\": \"newUser\",\r\n    \"password\": \"newUser\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/v0/users/auth",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"v0",
+						"users",
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update user password",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"oldPass\": \"brandNewPass\",\r\n    \"newPass\": \"brandNewPass\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/v0/users/:user/password",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"v0",
+						"users",
+						":user",
+						"password"
+					],
+					"variable": [
+						{
+							"key": "user",
+							"value": "newUser"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update user role",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhdXRoLXN5c3RlbSIsInN1YiI6IjEiLCJyb2xlIjoiQWRtaW4iLCJpc3MiOiJhdXRoLXN5c3RlbSIsImV4cCI6MTY5NzcyMzg0MywidXNlciI6ImFkbWluIiwiZW1haWwiOiJ5YWtpbXljaGV2QGdtYWlsLmNvbSJ9.R7c7v01lOob24XZh2hn9fGzvl0aJ4Aa1_4gVEQhHVow",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"newRole\": \"reviewer\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/v0/users/:user/role",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"v0",
+						"users",
+						":user",
+						"role"
+					],
+					"variable": [
+						{
+							"key": "user",
+							"value": "newUser2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get admin",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhdXRoLXN5c3RlbSIsInN1YiI6IjUiLCJyb2xlIjoiUmV2aWV3ZXIiLCJpc3MiOiJhdXRoLXN5c3RlbSIsImV4cCI6MTY5NzcyNDAyOCwidXNlciI6Im5ld1VzZXIyIiwiZW1haWwiOiJuZXdVc2VyMkBnbWFpbC5jb20ifQ.cOQ88OZJ880hdrZuXr47cQn32PyphfpuMmCBVzsyfhE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"oldPass\": \"myFreshNewPass\",\r\n    \"newPass\": \"myNewPass\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/v0/roles/admin",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"v0",
+						"roles",
+						"admin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get reviewer",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhdXRoLXN5c3RlbSIsInN1YiI6IjUiLCJyb2xlIjoiUmV2aWV3ZXIiLCJpc3MiOiJhdXRoLXN5c3RlbSIsImV4cCI6MTY5NzcyNDAyOCwidXNlciI6Im5ld1VzZXIyIiwiZW1haWwiOiJuZXdVc2VyMkBnbWFpbC5jb20ifQ.cOQ88OZJ880hdrZuXr47cQn32PyphfpuMmCBVzsyfhE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/v0/roles/reviewer",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"v0",
+						"roles",
+						"reviewer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhdXRoLXN5c3RlbSIsInN1YiI6IjUiLCJyb2xlIjoiUmV2aWV3ZXIiLCJpc3MiOiJhdXRoLXN5c3RlbSIsImV4cCI6MTY5NzcyNDAyOCwidXNlciI6Im5ld1VzZXIyIiwiZW1haWwiOiJuZXdVc2VyMkBnbWFpbC5jb20ifQ.cOQ88OZJ880hdrZuXr47cQn32PyphfpuMmCBVzsyfhE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/v0/roles/user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"v0",
+						"roles",
+						"user"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
