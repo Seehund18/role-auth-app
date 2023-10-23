@@ -158,11 +158,22 @@ internal class AuthServiceTest {
     @MethodSource("successRolePairs")
     fun testAuthorizeRequestSuccess(userRole: SystemRoles, minRequiredRole: SystemRoles) {
         val dumbJwt = "Dumb_jwt_token"
-        val expectedMapWithClaims = mapOf(AuthClaims.ROLE.name.lowercase() to userRole.name,
-            AuthClaims.LOGIN.name.lowercase() to "someUser",
-            AuthClaims.EMAIL.name.lowercase() to "someEmail@gmail.com")
+        val user = "someUser"
+        val email = "someEmail@gmail.com"
+        val expectedMapWithClaims = mapOf(
+            AuthClaims.ROLE.claimName to userRole.name,
+            AuthClaims.LOGIN.claimName to user,
+            AuthClaims.EMAIL.claimName to "someEmail@gmail.com"
+        )
 
         whenever(jwtTokenHandler.getAllClaimsFromToken(dumbJwt)).thenReturn(expectedMapWithClaims)
+        whenever(usersRepo.findByLoginIgnoreCase(user)).thenReturn(
+            generateUserEntity(
+                user, email,
+                roleEntity = generateRoleEntity(userRole.name),
+                passEntity = null
+            )
+        )
         whenever(rolesRepo.findByNameIgnoreCase(any())).thenReturn(
             generateRoleEntity(minRequiredRole.name)
         )
@@ -181,9 +192,23 @@ internal class AuthServiceTest {
     @MethodSource("badRolePairs")
     fun testAuthorizeRequestErrorOnInsufficientPermissions(userRole: SystemRoles, minRequiredRole: SystemRoles) {
         val dumbJwt = "Dumb_jwt_token"
-        val mapWithClaims = mapOf(AuthClaims.ROLE.name.lowercase() to userRole.name)
+        val user = "someUser"
+        val email = "someEmail@gmail.com"
+        val mapWithClaims = mapOf(
+            AuthClaims.ROLE.claimName to userRole.name,
+            AuthClaims.LOGIN.claimName to user,
+            AuthClaims.EMAIL.claimName to email
+        )
 
         whenever(jwtTokenHandler.getAllClaimsFromToken(eq(dumbJwt))).thenReturn(mapWithClaims)
+        whenever(usersRepo.findByLoginIgnoreCase(user)).thenReturn(
+            generateUserEntity(
+                login = user,
+                email = email,
+                roleEntity = generateRoleEntity(userRole.name),
+                passEntity = null
+            )
+        )
         whenever(rolesRepo.findByNameIgnoreCase(any())).thenReturn(
             generateRoleEntity(minRequiredRole.name)
         )
@@ -206,6 +231,7 @@ internal class AuthServiceTest {
                 generateRoleEntity(SystemRoles.ADMIN.name),
                 generateRoleEntity(SystemRoles.REVIEWER.name)
             )
+
             SystemRoles.USER -> listOf(
                 generateRoleEntity(SystemRoles.ADMIN.name),
                 generateRoleEntity(SystemRoles.REVIEWER.name),

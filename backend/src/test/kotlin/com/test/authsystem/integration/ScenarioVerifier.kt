@@ -92,11 +92,10 @@ class ScenarioVerifier(
         val email = "${generateRandomString(5)}@gmail.com"
         val password = generateRandomString(15)
         verifyCreateUser(userLogin, email, password)
-        var userAuth = verifyAuthCall(userLogin, password)
+        val userAuth = verifyAuthCall(userLogin, password)
         verifyRoleEndpointCallForbidden(userAuth.jwtToken, testedEndpoint)
 
         verifyPromoteUser(adminJwtToken, userLogin, neededRole.name)
-        userAuth = verifyAuthCall(userLogin, password)
         verifyRoleEndpointCallSuccess(userAuth.jwtToken, testedEndpoint)
 
         endpointAndCalls.compute(testedEndpoint) { _, count ->

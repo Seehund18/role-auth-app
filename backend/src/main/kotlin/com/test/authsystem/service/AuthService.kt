@@ -76,13 +76,14 @@ class AuthService(
     @Transactional
     fun authorizeRequest(jwtToken: String, minRequiredRole: SystemRoles) : Map<String, String> {
         val claimsMap = jwtTokenHandler.getAllClaimsFromToken(jwtToken)
-        val jwtRole = claimsMap[AuthClaims.ROLE.name.lowercase()] ?: throw JwtTokenException("Malformed jwt token")
+        val jwtUser = claimsMap[AuthClaims.LOGIN.claimName] ?: throw JwtTokenException("Malformed jwt token")
 
+        val userRole = usersRepo.findByLoginIgnoreCase(jwtUser)?.role?.name ?: throw RuntimeException("User with given login doesn't exist")
         val minRequiredRoleEntity = rolesRepo.findByNameIgnoreCase(minRequiredRole.name)
             ?: throw RuntimeException("$minRequiredRole wasn't found")
         val jwtRoleCorrect = rolesRepo.findByPriorityValueLessThanEqual(minRequiredRoleEntity.priorityValue)
             .map { roleEntity -> roleEntity.name.lowercase() }
-            .contains(jwtRole.lowercase())
+            .contains(userRole.lowercase())
 
         if (!jwtRoleCorrect) {
             throw NotEnoughPermissionsException("User's permissions isn't enough to access the endpoint")
