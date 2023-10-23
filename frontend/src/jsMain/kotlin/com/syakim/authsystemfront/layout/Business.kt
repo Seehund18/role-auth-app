@@ -15,8 +15,7 @@ fun Container.businessPage(state: AppState) {
     div(className = "home-page") {
         div(className = "banner") {
             div(className = "container") {
-                h1("Welcome to ${state.businessEndpoint?.url}", className = "logo-font")
-                p("${state.businessEndpoint?.description}")
+                h1("Welcome to ${state.businessEndpoint?.description}", className = "logo-font")
             }
         }
         div(className = "container page") {
