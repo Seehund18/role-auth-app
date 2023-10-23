@@ -22,7 +22,7 @@ data class CreateUserRequest(
     @field:NotBlankPassword(message = "Password must not be blank")
     val password: CharArray,
 
-    @Schema(description = "User birthday", example = "1990-09-24", required = false)
+    @Schema(description = "User birthday in format YYYY-mm-dd", example = "1990-09-24", required = false)
     @field:Past(message = "Birthday must be in the past")
     val birthday: LocalDate?
 )

@@ -54,7 +54,6 @@ class JwtTokenHandler(var tokenProps: JwtTokenProps) {
     }
 
     fun getClaimFromToken(claim: AuthClaims, jwtToken: String) : String {
-        //TODO Потенциально убрать
         val key = Keys.hmacShaKeyFor(tokenProps.secret.toByteArray())
 
         try {

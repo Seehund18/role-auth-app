@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "Roles API", description = "Role protected endpoints")
 @RestController
 @RequestMapping("/v0/roles")
-@CrossOrigin(origins = ["http://localhost:3000", "http://localhost:8090"])
 class RolesController {
 
     @Operation(summary = "ADMIN protected endpoint")

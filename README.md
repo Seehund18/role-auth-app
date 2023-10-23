@@ -13,6 +13,13 @@ Used tech stack:
 - **JUnit 5**, **Mockito**, **Testcontainers** for testing
 - **Docker** for integration tests with Testcontainers and local deployment
 
+Some implementation insights:
+- No ACL libs were used (no Spring Security). Implemented authorization through AOP and custom annotation
+- Passwords are hashed and salted with PBKDF2 algorithm before stored in DB
+- Authentication implemented with a use of JWT tokens with some user data, which is used later in authorization
+- For frontend implemented sign in page, profile page with available endpoints and business page with response from
+business endpoints
+
 ### Project structure
 
 - backend code can be found at `backend/src/main`
@@ -27,9 +34,9 @@ It builds both frontend and backend using `./gradlew`, builds docker image for t
 Prerequisites:
 - JDK17 must be installed on your machine
 - Docker must be installed on your machine
-- 8080 port must be available for backend
-- 5432 port must be available for postgres
-- 8090 port must be available for frontend
+- `8080` port must be available for backend
+- `5432` port must be available for postgres
+- `8090` port must be available for frontend
 
 Please keep in mind, that for some systems script permissions must be changed before running it
 ```bash
@@ -41,7 +48,7 @@ chmod u+wx,o+wx ./build-and-run.sh
 After running applications in Docker, following links can be used to access different parts of the system:
 
 - Swagger UI with backend API description [`http://localhost:8080/swagger-ui/index.html`](http://localhost:8080/swagger-ui/index.html).
-- Download Open API specification [`http://localhost:8080/v3/api-docs.yaml`](http://localhost:8080/v3/api-docs.yaml)
+- Download Open API specification of backend API [`http://localhost:8080/v3/api-docs.yaml`](http://localhost:8080/v3/api-docs.yaml)
 - Frontend [http://localhost:8090](http://localhost:8090)
 
 ### Testing

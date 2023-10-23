@@ -71,7 +71,6 @@ object RoleAuthManager : CoroutineScope by CoroutineScope(Dispatchers.Default + 
         appReduxStore.dispatch(AppAction.BusinessLoading(businessEndpoint))
         withProgress {
             val statusResponse = Api.sendRoleRequest(businessEndpoint.url)
-            println(statusResponse)
             appReduxStore.dispatch(AppAction.BusinessLoaded(statusResponse))
             routing.navigate(View.BUSINESS.url)
         }

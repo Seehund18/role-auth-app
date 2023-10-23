@@ -9,6 +9,11 @@ spring:
   flyway:
     schemas: auth_system
 
+cors:
+  allowed-origins:
+    - http://localhost:3000
+    - http://localhost:8090
+
 password-generator:
   pbkdf2:
     iteration-count: 65536
