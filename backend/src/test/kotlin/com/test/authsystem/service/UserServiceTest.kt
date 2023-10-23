@@ -3,6 +3,7 @@ package com.test.authsystem.service
 import com.test.authsystem.constants.SystemRoles
 import com.test.authsystem.db.RolesRepository
 import com.test.authsystem.db.UsersRepository
+import com.test.authsystem.exception.DuplicateException
 import com.test.authsystem.exception.NoEntityWasFound
 import com.test.authsystem.exception.PassDoesntMatchException
 import com.test.authsystem.generatePassEntity
@@ -10,6 +11,7 @@ import com.test.authsystem.generateRoleEntity
 import com.test.authsystem.generateUserEntity
 import com.test.authsystem.model.api.ChangePassRequest
 import com.test.authsystem.model.api.ChangeRoleRequest
+import com.test.authsystem.model.api.CreateUserRequest
 import com.test.authsystem.model.db.EndpointsEntity
 import com.test.authsystem.model.db.RoleEntity
 import java.time.LocalDate
@@ -29,13 +31,13 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
-internal class UserModificationServiceTest {
+internal class UserServiceTest {
 
     private val rolesRepo = Mockito.mock(RolesRepository::class.java)
     private val usersRepo = Mockito.mock(UsersRepository::class.java)
     private val passHashingService = Mockito.mock(PassHashingService::class.java)
 
-    private val userModificationService = UserModificationService(passHashingService, rolesRepo, usersRepo)
+    private val userService = UserService(passHashingService, rolesRepo, usersRepo)
 
     @ParameterizedTest
     @MethodSource("roleAndExpectedEndpoints")
@@ -59,7 +61,7 @@ internal class UserModificationServiceTest {
             generateRolesWithEqualOrLessPriority(userRole)
         )
 
-        val (userEntity, endpoints) = userModificationService.getUserInfo(expectedLogin)
+        val (userEntity, endpoints) = userService.getUserInfo(expectedLogin)
 
         assertEquals(expectedLogin, userEntity.login)
         assertEquals(expectedEmail, userEntity.email)
@@ -97,9 +99,54 @@ internal class UserModificationServiceTest {
         whenever(usersRepo.findByLoginIgnoreCase(any())).thenReturn(null)
 
         assertThrows(NoEntityWasFound::class.java) {
-            userModificationService.getUserInfo(expectedLogin)
+            userService.getUserInfo(expectedLogin)
         }
         verify(usersRepo).findByLoginIgnoreCase(eq(expectedLogin))
+    }
+
+    @Test
+    fun testSignUpNewUserSuccess() {
+        val expectedLogin = "testLogin"
+        val expectedEmail = "testEmail"
+        val testPassword = "someTestPassword"
+        val expectedBirthday = LocalDate.now()
+        val createUserRequest = CreateUserRequest(
+            login = expectedLogin,
+            email = expectedEmail,
+            password = testPassword.toCharArray(),
+            birthday = expectedBirthday
+        )
+
+        // Return the argument of save function
+        Mockito.`when`(usersRepo.save(any())).thenAnswer { answer -> answer.arguments[0] }
+        whenever(usersRepo.existsByLoginIgnoreCaseOrEmail(eq(expectedLogin), eq(expectedEmail))).thenReturn(false)
+        whenever(passHashingService.generateHashedPassAndSalt(any())).thenReturn("hashedPass".toByteArray() to "salt".toByteArray())
+        whenever(rolesRepo.findByNameIgnoreCase(any())).thenReturn(generateRoleEntity())
+
+        val userEntity = userService.createNewUser(createUserRequest)
+
+        kotlin.test.assertEquals(expectedLogin, userEntity.login)
+        kotlin.test.assertEquals(expectedEmail, userEntity.email)
+        kotlin.test.assertEquals(expectedBirthday, userEntity.birthday)
+        Assertions.assertNotEquals(testPassword.toByteArray(), userEntity.passwordEntity.passwordHash)
+    }
+
+    @Test
+    fun testSignUpNewUserErrorOnDuplicateLoginOrEmail() {
+        val expectedLogin = "testLogin"
+        val expectedEmail = "testEmail"
+        val testPassword = "someTestPassword"
+        val expectedBirthday = LocalDate.now()
+        val createUserRequest = CreateUserRequest(
+            login = expectedLogin,
+            email = expectedEmail,
+            password = testPassword.toCharArray(),
+            birthday = expectedBirthday
+        )
+
+        whenever(usersRepo.existsByLoginIgnoreCaseOrEmail(eq(expectedLogin), eq(expectedEmail))).thenReturn(true)
+
+        assertThrows(DuplicateException::class.java) { userService.createNewUser(createUserRequest) }
     }
 
     @Test
@@ -127,7 +174,7 @@ internal class UserModificationServiceTest {
         // Return the argument of save function
         Mockito.`when`(usersRepo.save(any())).thenAnswer { answer -> answer.arguments[0] }
 
-        val userEntity = userModificationService.changePassword(expectedLogin, changePassRequest)
+        val userEntity = userService.changePassword(expectedLogin, changePassRequest)
 
         kotlin.test.assertEquals(expectedLogin, userEntity.login)
         kotlin.test.assertEquals(expectedEmail, userEntity.email)
@@ -146,7 +193,7 @@ internal class UserModificationServiceTest {
         whenever(usersRepo.findByLoginIgnoreCase(any())).thenReturn(null)
 
         assertThrows(NoEntityWasFound::class.java) {
-            userModificationService.changePassword(
+            userService.changePassword(
                 expectedLogin,
                 changePassRequest
             )
@@ -177,7 +224,7 @@ internal class UserModificationServiceTest {
         whenever(passHashingService.generateHashedPassWithSalt(any(), any())).thenReturn(wrongPassHash.toByteArray())
 
         assertThrows(PassDoesntMatchException::class.java) {
-            userModificationService.changePassword(
+            userService.changePassword(
                 expectedLogin,
                 changePassRequest
             )
@@ -214,7 +261,7 @@ internal class UserModificationServiceTest {
         // Return the argument of save function
         Mockito.`when`(usersRepo.save(any())).thenAnswer { answer -> answer.arguments[0] }
 
-        val user = userModificationService.changeUserRole(expectedLogin, changeRoleRequest)
+        val user = userService.changeUserRole(expectedLogin, changeRoleRequest)
 
         assertEquals(newRole, user.role.name)
     }
@@ -230,7 +277,7 @@ internal class UserModificationServiceTest {
         whenever(rolesRepo.findByNameIgnoreCase(eq(newRole))).thenReturn(null)
 
         assertThrows(NoEntityWasFound::class.java) {
-            userModificationService.changeUserRole(expectedLogin, changeRoleRequest)
+            userService.changeUserRole(expectedLogin, changeRoleRequest)
         }
     }
 
@@ -252,7 +299,7 @@ internal class UserModificationServiceTest {
         whenever(usersRepo.findByLoginIgnoreCase(any())).thenReturn(null)
 
         assertThrows(NoEntityWasFound::class.java) {
-            userModificationService.changeUserRole(expectedLogin, changeRoleRequest)
+            userService.changeUserRole(expectedLogin, changeRoleRequest)
         }
     }
 }

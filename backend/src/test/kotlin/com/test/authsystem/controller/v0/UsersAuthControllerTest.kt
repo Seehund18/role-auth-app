@@ -11,8 +11,7 @@ import com.test.authsystem.generateUserEntity
 import com.test.authsystem.model.api.Endpoint
 import com.test.authsystem.service.AuthService
 import com.test.authsystem.service.JwtTokenHandler
-import com.test.authsystem.service.UserModificationService
-import java.time.LocalDateTime
+import com.test.authsystem.service.UserService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -46,7 +45,7 @@ constructor(
     private lateinit var authService: AuthService
 
     @MockBean
-    private lateinit var userModificationService: UserModificationService
+    private lateinit var userService: UserService
 
     @MockBean
     private lateinit var jwtTokenHandler: JwtTokenHandler
@@ -73,7 +72,7 @@ constructor(
         )
 
         val jwtToken = "dumb_token"
-        whenever(userModificationService.getUserInfo(eq(expectedLogin)))
+        whenever(userService.getUserInfo(eq(expectedLogin)))
             .thenReturn(expectedUserEntity to expectedEndpoints)
         whenever(jwtTokenHandler.getClaimFromToken(eq(AuthClaims.LOGIN), eq(jwtToken))).thenReturn(expectedLogin)
 
@@ -129,7 +128,7 @@ constructor(
             .contentType(MediaType.APPLICATION_JSON)
             .content(createUserRequestBody)
 
-        whenever(authService.signUpNewUser(any())).thenReturn(generateUserEntity(expectedLogin, expectedEmail, null))
+        whenever(userService.createNewUser(any())).thenReturn(generateUserEntity(expectedLogin, expectedEmail, null))
 
         mockMvc.perform(request)
             .andExpect(MockMvcResultMatchers.status().isCreated)
@@ -177,56 +176,10 @@ constructor(
             .contentType(MediaType.APPLICATION_JSON)
             .content(createUserRequestBody)
 
-        whenever(authService.signUpNewUser(any())).thenThrow(exClass)
+        whenever(userService.createNewUser(any())).thenThrow(exClass)
 
         mockMvc.perform(request)
             .andExpect(MockMvcResultMatchers.status().`is`(status.value()))
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.status").value(SystemResponseStatus.FAILED.name))
-            .andExpect(jsonPath("$.description").isNotEmpty)
-    }
-
-    @Test
-    fun testUserAuthSuccess() {
-        val expectedLogin = "testLogin"
-        val password = "fasfadfr3t398t"
-        val authRequestBody = """
-            {
-                "login": "$expectedLogin",
-                "password": "$password"
-            }
-        """
-        val request = MockMvcRequestBuilders
-            .post("/v0/users/auth")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(authRequestBody)
-
-        whenever(authService.signInUser(any())).thenReturn("some_jwt_token" to LocalDateTime.now().plusDays(1))
-
-        mockMvc.perform(request)
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.status").value(SystemResponseStatus.SUCCESS.name))
-            .andExpect(jsonPath("$.jwtToken").isNotEmpty)
-            .andExpect(jsonPath("$.expirationDate").isNotEmpty)
-    }
-
-    @ParameterizedTest
-    @MethodSource("badAuthUserParameters")
-    fun testUserAuthRequestValidationError(login: String?, password: String?) {
-        val authRequestBody = """
-            {
-                "login": ${if (login != null) "\"$login\"" else null},
-                "password": ${if (password != null) "\"$password\"" else null}
-            }
-        """
-        val request = MockMvcRequestBuilders
-            .post("/v0/users/auth")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(authRequestBody)
-
-        mockMvc.perform(request)
-            .andExpect(MockMvcResultMatchers.status().isBadRequest)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.status").value(SystemResponseStatus.FAILED.name))
             .andExpect(jsonPath("$.description").isNotEmpty)
@@ -251,7 +204,7 @@ constructor(
             .contentType(MediaType.APPLICATION_JSON)
             .content(changePassRequestBody)
 
-        whenever(userModificationService.changePassword(any(), any())).thenReturn(null)
+        whenever(userService.changePassword(any(), any())).thenReturn(null)
         whenever(jwtTokenHandler.getClaimFromToken(eq(AuthClaims.LOGIN), eq(jwtToken))).thenReturn(user)
 
         mockMvc.perform(request)
@@ -324,7 +277,7 @@ constructor(
             .contentType(MediaType.APPLICATION_JSON)
             .content(changeRoleRequestBody)
 
-        whenever(userModificationService.changeUserRole(any(), any())).thenReturn(null)
+        whenever(userService.changeUserRole(any(), any())).thenReturn(null)
 
         mockMvc.perform(request)
             .andExpect(MockMvcResultMatchers.status().isOk)
@@ -370,16 +323,6 @@ constructor(
             Arguments.of("correctLogin", "correctEmail@gmail.com", "", "1995-09-02"),
             Arguments.of("correctLogin", "correctEmail@gmail.com", "   ", "1995-09-02"),
             Arguments.of("correctLogin", "correctEmail@gmail.com", "correctPass", "2100-10-14")
-        )
-
-        @JvmStatic
-        fun badAuthUserParameters() = listOf(
-            Arguments.of(null, "correctPass"),
-            Arguments.of("", "correctPass"),
-            Arguments.of("   ", "correctPass"),
-            Arguments.of("correctLogin", null),
-            Arguments.of("correctLogin", ""),
-            Arguments.of("correctLogin", "   "),
         )
 
         @JvmStatic

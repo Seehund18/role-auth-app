@@ -40,51 +40,6 @@ internal class AuthServiceTest {
     private val authService = AuthService(rolesRepo, usersRepo, passHashingService, jwtTokenHandler)
 
     @Test
-    fun testSignUpNewUserSuccess() {
-        val expectedLogin = "testLogin"
-        val expectedEmail = "testEmail"
-        val testPassword = "someTestPassword"
-        val expectedBirthday = LocalDate.now()
-        val createUserRequest = CreateUserRequest(
-            login = expectedLogin,
-            email = expectedEmail,
-            password = testPassword.toCharArray(),
-            birthday = expectedBirthday
-        )
-
-        // Return the argument of save function
-        `when`(usersRepo.save(any())).thenAnswer { answer -> answer.arguments[0] }
-        whenever(usersRepo.existsByLoginIgnoreCaseOrEmail(eq(expectedLogin), eq(expectedEmail))).thenReturn(false)
-        whenever(passHashingService.generateHashedPassAndSalt(any())).thenReturn("hashedPass".toByteArray() to "salt".toByteArray())
-        whenever(rolesRepo.findByNameIgnoreCase(any())).thenReturn(generateRoleEntity())
-
-        val userEntity = authService.signUpNewUser(createUserRequest)
-
-        assertEquals(expectedLogin, userEntity.login)
-        assertEquals(expectedEmail, userEntity.email)
-        assertEquals(expectedBirthday, userEntity.birthday)
-        assertNotEquals(testPassword.toByteArray(), userEntity.passwordEntity.passwordHash)
-    }
-
-    @Test
-    fun testSignUpNewUserErrorOnDuplicateLoginOrEmail() {
-        val expectedLogin = "testLogin"
-        val expectedEmail = "testEmail"
-        val testPassword = "someTestPassword"
-        val expectedBirthday = LocalDate.now()
-        val createUserRequest = CreateUserRequest(
-            login = expectedLogin,
-            email = expectedEmail,
-            password = testPassword.toCharArray(),
-            birthday = expectedBirthday
-        )
-
-        whenever(usersRepo.existsByLoginIgnoreCaseOrEmail(eq(expectedLogin), eq(expectedEmail))).thenReturn(true)
-
-        Assertions.assertThrows(DuplicateException::class.java) { authService.signUpNewUser(createUserRequest) }
-    }
-
-    @Test
     fun testSignInUserSuccess() {
         val expectedLogin = "testLogin"
         val expectedEmail = "testEmail"

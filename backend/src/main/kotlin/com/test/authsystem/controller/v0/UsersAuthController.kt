@@ -5,16 +5,13 @@ import com.test.authsystem.constants.AuthClaims
 import com.test.authsystem.constants.SystemResponseStatus
 import com.test.authsystem.constants.SystemRoles
 import com.test.authsystem.exception.UsersDontMatchException
-import com.test.authsystem.model.api.AuthRequest
-import com.test.authsystem.model.api.AuthResponse
 import com.test.authsystem.model.api.ChangePassRequest
 import com.test.authsystem.model.api.ChangeRoleRequest
 import com.test.authsystem.model.api.CreateUserRequest
 import com.test.authsystem.model.api.GetUserInfoResponse
 import com.test.authsystem.model.api.StatusResponse
-import com.test.authsystem.service.AuthService
 import com.test.authsystem.service.JwtTokenHandler
-import com.test.authsystem.service.UserModificationService
+import com.test.authsystem.service.UserService
 import com.test.authsystem.util.extractJwtTokenFromHeader
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.Operation
@@ -54,8 +51,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/v0/users")
 @CrossOrigin(origins = ["http://localhost:3000", "http://localhost:8090"])
 class UsersAuthController(
-    var authService: AuthService,
-    var userModificationService: UserModificationService,
+    var userService: UserService,
     var jwtTokenHandler: JwtTokenHandler,
     val log: KLogger = KotlinLogging.logger {}
 ) {
@@ -111,7 +107,7 @@ class UsersAuthController(
         checkJwtAndRequestUsers(authHeader, login)
         log.info { "Processing request for getting user info: $login" }
 
-        val (userEntity, endpointList) = userModificationService.getUserInfo(login)
+        val (userEntity, endpointList) = userService.getUserInfo(login)
 
         return ResponseEntity.ok()
             .body(
@@ -162,7 +158,7 @@ class UsersAuthController(
     @PostMapping
     fun addUser(@RequestBody @Valid createUserRequest: CreateUserRequest): ResponseEntity<StatusResponse> {
         log.info { "Processing request for adding a new user: ${createUserRequest.login}" }
-        authService.signUpNewUser(createUserRequest)
+        userService.createNewUser(createUserRequest)
 
         return ResponseEntity.created(URI("/v0/users/${createUserRequest.login}"))
             .body(
@@ -171,40 +167,6 @@ class UsersAuthController(
                     description = "User has been successfully created"
                 )
             )
-    }
-
-    @Operation(summary = "Authenticate the user with username and password. Available to everyone")
-    @ApiResponses(
-        value = [
-            ApiResponse(
-                responseCode = "200", description = "User has been authenticated", content = [
-                    (Content(mediaType = "application/json", schema = Schema(implementation = AuthResponse::class)))]
-            ),
-            ApiResponse(
-                responseCode = "400",
-                description = "Data from request isn't correct or valid",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = StatusResponse::class)
-                )]
-            ),
-            ApiResponse(
-                responseCode = "500",
-                description = "Internal error",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = StatusResponse::class)
-                )]
-            )
-        ]
-    )
-    @PostMapping("/auth")
-    fun authUser(@RequestBody @Valid authRequest: AuthRequest): ResponseEntity<AuthResponse> {
-        log.info { "Processing auth request for user ${authRequest.login}" }
-        val (jwtToken, expirationDate) = authService.signInUser(authRequest)
-
-        return ResponseEntity.ok()
-            .body(AuthResponse(SystemResponseStatus.SUCCESS.name, jwtToken, expirationDate))
     }
 
     @Operation(summary = "Change user's password. Available only to the user changing password")
@@ -259,7 +221,7 @@ class UsersAuthController(
         checkJwtAndRequestUsers(authHeader, login)
 
         log.info { "Processing change password request for user $login" }
-        userModificationService.changePassword(login, changeRequest)
+        userService.changePassword(login, changeRequest)
 
         return ResponseEntity.ok()
             .body(StatusResponse(status = SystemResponseStatus.SUCCESS.name, description = "Password has been changed"))
@@ -314,13 +276,13 @@ class UsersAuthController(
     )
     @Authorized(SystemRoles.ADMIN)
     @PutMapping("/{user}/role")
-    fun changeRole(
+    fun changeUserRole(
         jwtClaims: MutableMap<String, String>,
         @PathVariable("user") login: String,
         @RequestBody @Valid changeRoleRequest: ChangeRoleRequest
     ): ResponseEntity<StatusResponse> {
         log.info { "Processing role change to ${changeRoleRequest.newRole} for the user $login" }
-        userModificationService.changeUserRole(login, changeRoleRequest)
+        userService.changeUserRole(login, changeRoleRequest)
 
         return ResponseEntity.ok()
             .body(StatusResponse(status = SystemResponseStatus.SUCCESS.name, description = "Role has been changed"))

@@ -6,7 +6,7 @@ import com.test.authsystem.constants.SystemRoles
 import com.test.authsystem.exception.NotEnoughPermissionsException
 import com.test.authsystem.service.AuthService
 import com.test.authsystem.service.JwtTokenHandler
-import com.test.authsystem.service.UserModificationService
+import com.test.authsystem.service.UserService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -39,7 +39,7 @@ constructor(
     private lateinit var authService: AuthService
 
     @MockBean
-    private lateinit var userModificationService: UserModificationService
+    private lateinit var userService: UserService
 
     @MockBean
     private lateinit var jwtTokenHandler: JwtTokenHandler
