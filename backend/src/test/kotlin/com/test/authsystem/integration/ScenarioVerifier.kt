@@ -222,7 +222,7 @@ class ScenarioVerifier(
             }
         """
         val request = MockMvcRequestBuilders
-            .put("/v0/users/$login/password")
+            .post("/v0/users/$login/password")
             .header(HttpHeaders.AUTHORIZATION, "Bearer $userJwtToken")
             .contentType(MediaType.APPLICATION_JSON)
             .content(changePassRequestBody)

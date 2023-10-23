@@ -35,7 +35,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 
 @WebMvcTest
 @ActiveProfiles("test")
-internal class UsersAuthControllerTest
+internal class UsersControllerTest
 @Autowired
 constructor(
     private val mockMvc: MockMvc
@@ -199,7 +199,7 @@ constructor(
         """
         val jwtToken = "someStubJwtToken"
         val request = MockMvcRequestBuilders
-            .put("/v0/users/$user/password")
+            .post("/v0/users/$user/password")
             .header(HttpHeaders.AUTHORIZATION, "Bearer $jwtToken")
             .contentType(MediaType.APPLICATION_JSON)
             .content(changePassRequestBody)
@@ -228,7 +228,7 @@ constructor(
         """
         val jwtToken = "someStubJwtToken"
         val request = MockMvcRequestBuilders
-            .put("/v0/users/$user/password")
+            .post("/v0/users/$user/password")
             .header(HttpHeaders.AUTHORIZATION, "Bearer $jwtToken")
             .contentType(MediaType.APPLICATION_JSON)
             .content(changePassRequestBody)
@@ -250,7 +250,7 @@ constructor(
             }
         """
         val request = MockMvcRequestBuilders
-            .put("/v0/users/$user/password")
+            .post("/v0/users/$user/password")
             .contentType(MediaType.APPLICATION_JSON)
             .content(changePassRequestBody)
 

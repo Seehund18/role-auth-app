@@ -27,7 +27,6 @@ import mu.KLogger
 import mu.KotlinLogging
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -49,13 +48,13 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "User API", description = "Actions with users")
 @RestController
 @RequestMapping("/v0/users")
-class UsersAuthController(
+class UsersController(
     var userService: UserService,
     var jwtTokenHandler: JwtTokenHandler,
     val log: KLogger = KotlinLogging.logger {}
 ) {
 
-    @Operation(summary = "Get user info. Available only to the user issuing request")
+    @Operation(summary = "Get user info. User can request only its own data")
     @ApiResponses(
         value = [
             ApiResponse(
@@ -168,7 +167,7 @@ class UsersAuthController(
             )
     }
 
-    @Operation(summary = "Change user's password. Available only to the user changing password")
+    @Operation(summary = "Change user's password. User can change only its own password")
     @ApiResponses(
         value = [
             ApiResponse(
@@ -210,7 +209,7 @@ class UsersAuthController(
         ]
     )
     @Authorized(SystemRoles.USER)
-    @PutMapping("/{user}/password")
+    @PostMapping("/{user}/password")
     fun changePassword(
         jwtClaims: MutableMap<String, String>,
         @PathVariable("user") login: String,
