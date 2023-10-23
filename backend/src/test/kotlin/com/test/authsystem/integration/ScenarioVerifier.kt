@@ -152,7 +152,7 @@ class ScenarioVerifier(
         """
 
         val request = MockMvcRequestBuilders
-            .post("/v0/users/auth")
+            .post("/v0/auth")
             .contentType(MediaType.APPLICATION_JSON)
             .content(authUserRequestBody)
 

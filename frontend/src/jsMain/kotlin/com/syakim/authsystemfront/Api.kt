@@ -12,7 +12,7 @@ import kotlinx.coroutines.await
 object Api {
 
     const val BASE_URL = "http://localhost:8080"
-    const val AUTH_ENDPOINT = "/v0/users/auth"
+    const val AUTH_ENDPOINT = "/v0/auth"
     const val GET_USER_INFO_ENDPOINT = "/v0/users"
 
     private val restClient = RestClient()

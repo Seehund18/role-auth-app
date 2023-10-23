@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "Auth API", description = "Authentication")
 @RestController
-@RequestMapping("/v0/users/auth")
+@RequestMapping("/v0/auth")
 @CrossOrigin(origins = ["http://localhost:3000", "http://localhost:8090"])
 class AuthController(
     val authService: AuthService,

@@ -87,7 +87,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/v0/users/auth",
+					"raw": "http://localhost:8080/v0/auth",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -95,7 +95,6 @@
 					"port": "8080",
 					"path": [
 						"v0",
-						"users",
 						"auth"
 					]
 				}
