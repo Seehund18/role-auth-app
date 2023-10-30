@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -56,7 +55,7 @@ class RolesController {
     )
     @Authorized(minRole = SystemRoles.ADMIN)
     @GetMapping("/admin")
-    fun adminEndpoint(jwtClaims: MutableMap<String, String>): ResponseEntity<StatusResponse> {
+    fun adminEndpoint(): ResponseEntity<StatusResponse> {
         return ResponseEntity.ok()
             .body(
                 StatusResponse(
@@ -101,7 +100,7 @@ class RolesController {
     )
     @Authorized(minRole = SystemRoles.REVIEWER)
     @GetMapping("/reviewer")
-    fun reviewerEndpoint(jwtClaims: MutableMap<String, String>): ResponseEntity<StatusResponse> {
+    fun reviewerEndpoint(): ResponseEntity<StatusResponse> {
         return ResponseEntity.ok()
             .body(
                 StatusResponse(
@@ -146,7 +145,7 @@ class RolesController {
     )
     @Authorized(minRole = SystemRoles.USER)
     @GetMapping("/user")
-    fun userEndpoint(jwtClaims: MutableMap<String, String>): ResponseEntity<StatusResponse> {
+    fun userEndpoint(): ResponseEntity<StatusResponse> {
         return ResponseEntity.ok()
             .body(
                 StatusResponse(

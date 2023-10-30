@@ -1,5 +1,6 @@
 package com.test.authsystem.controller.v0
 
+import com.test.authsystem.aop.AuthorizationAspect
 import com.test.authsystem.constants.AuthClaims
 import com.test.authsystem.constants.SystemResponseStatus
 import com.test.authsystem.exception.DuplicateException
@@ -21,8 +22,10 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -35,6 +38,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 
 @WebMvcTest
 @ActiveProfiles("test")
+@Import(value = [AopAutoConfiguration::class, AuthorizationAspect::class])
 internal class UsersControllerTest
 @Autowired
 constructor(
@@ -71,10 +75,11 @@ constructor(
             )
         )
 
-        val jwtToken = "dumb_token"
+        val jwtToken = "dumb_jwt_token"
         whenever(userService.getUserInfo(eq(expectedLogin)))
             .thenReturn(expectedUserEntity to expectedEndpoints)
-        whenever(jwtTokenHandler.getClaimFromToken(eq(AuthClaims.LOGIN), eq(jwtToken))).thenReturn(expectedLogin)
+        whenever(authService.authorizeRequest(eq(jwtToken), any()))
+            .thenReturn(mutableMapOf(AuthClaims.LOGIN.claimName to expectedLogin))
 
         val request = MockMvcRequestBuilders
             .get("/v0/users/$expectedLogin")
@@ -93,6 +98,45 @@ constructor(
             .andExpect(jsonPath("$.endpoints[0].description").value("stubEndpoint"))
             .andExpect(jsonPath("$.endpoints[1].url").value("someUrl2"))
             .andExpect(jsonPath("$.endpoints[1].description").value("stubEndpoint2"))
+    }
+
+    @Test
+    fun testGetUserWithWrongUser() {
+        val wrongLogin = "wrongLogin"
+        val expectedEmail = "testEmail@gmail.com"
+        val expectedRole = "testRole"
+        val userLogin = "testLogin"
+        val expectedUserEntity = generateUserEntity(
+            login = userLogin,
+            email = expectedEmail,
+            passEntity = null,
+            roleEntity = generateRoleEntity(name = expectedRole)
+        )
+        val expectedEndpoints = listOf(
+            Endpoint(
+                description = "stubEndpoint",
+                url = "someUrl"
+            ), Endpoint(
+                description = "stubEndpoint2",
+                url = "someUrl2"
+            )
+        )
+
+        val jwtToken = "dumb_jwt_token"
+        whenever(userService.getUserInfo(eq(userLogin)))
+            .thenReturn(expectedUserEntity to expectedEndpoints)
+        whenever(authService.authorizeRequest(eq(jwtToken), any()))
+            .thenReturn(mutableMapOf(AuthClaims.LOGIN.claimName to wrongLogin))
+
+        val request = MockMvcRequestBuilders
+            .get("/v0/users/$userLogin")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $jwtToken")
+
+        mockMvc.perform(request)
+            .andExpect(MockMvcResultMatchers.status().isForbidden)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.status").value(SystemResponseStatus.FAILED.name))
+            .andExpect(jsonPath("$.description").isNotEmpty)
     }
 
     @Test
@@ -205,12 +249,44 @@ constructor(
             .content(changePassRequestBody)
 
         whenever(userService.changePassword(any(), any())).thenReturn(null)
-        whenever(jwtTokenHandler.getClaimFromToken(eq(AuthClaims.LOGIN), eq(jwtToken))).thenReturn(user)
+        whenever(authService.authorizeRequest(eq(jwtToken), any()))
+            .thenReturn(mutableMapOf(AuthClaims.LOGIN.claimName to user))
 
         mockMvc.perform(request)
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.status").value(SystemResponseStatus.SUCCESS.name))
+            .andExpect(jsonPath("$.description").isNotEmpty)
+    }
+
+    @Test
+    fun testChangeUserPasswordWithWrongUser() {
+        val user = "newUser"
+        val oldPass = "oldPass"
+        val newPass = "newPass"
+        val wrongUser = "wrongUser"
+
+        val changePassRequestBody = """
+            {
+                "oldPass": "$oldPass",
+                "newPass": "$newPass"
+            }
+        """
+        val jwtToken = "someStubJwtToken"
+        val request = MockMvcRequestBuilders
+            .post("/v0/users/$user/password")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $jwtToken")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(changePassRequestBody)
+
+        whenever(userService.changePassword(any(), any())).thenReturn(null)
+        whenever(authService.authorizeRequest(eq(jwtToken), any()))
+            .thenReturn(mutableMapOf(AuthClaims.LOGIN.claimName to wrongUser))
+
+        mockMvc.perform(request)
+            .andExpect(MockMvcResultMatchers.status().isForbidden)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.status").value(SystemResponseStatus.FAILED.name))
             .andExpect(jsonPath("$.description").isNotEmpty)
     }
 

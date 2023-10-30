@@ -1,10 +1,8 @@
 package com.test.authsystem.controller.v0
 
 import com.test.authsystem.aop.Authorized
-import com.test.authsystem.constants.AuthClaims
 import com.test.authsystem.constants.SystemResponseStatus
 import com.test.authsystem.constants.SystemRoles
-import com.test.authsystem.exception.UsersDontMatchException
 import com.test.authsystem.model.api.ChangePassRequest
 import com.test.authsystem.model.api.ChangeRoleRequest
 import com.test.authsystem.model.api.CreateUserRequest
@@ -12,7 +10,6 @@ import com.test.authsystem.model.api.GetUserInfoResponse
 import com.test.authsystem.model.api.StatusResponse
 import com.test.authsystem.service.JwtTokenHandler
 import com.test.authsystem.service.UserService
-import com.test.authsystem.util.extractJwtTokenFromHeader
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.info.Info
@@ -95,14 +92,12 @@ class UsersController(
             )
         ]
     )
-    @Authorized(SystemRoles.USER)
+    @Authorized(SystemRoles.USER, verifyJwtAndRequestLogin = true)
     @GetMapping("/{user}")
     fun getUser(
-        jwtClaims: MutableMap<String, String>,
         @PathVariable("user") login: String,
         @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String,
     ): ResponseEntity<GetUserInfoResponse> {
-        checkJwtAndRequestUsers(authHeader, login)
         log.info { "Processing request for getting user info: $login" }
 
         val (userEntity, endpointList) = userService.getUserInfo(login)
@@ -208,27 +203,18 @@ class UsersController(
             )
         ]
     )
-    @Authorized(SystemRoles.USER)
+    @Authorized(SystemRoles.USER, verifyJwtAndRequestLogin = true)
     @PostMapping("/{user}/password")
     fun changePassword(
-        jwtClaims: MutableMap<String, String>,
         @PathVariable("user") login: String,
         @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String,
         @RequestBody @Valid changeRequest: ChangePassRequest
     ): ResponseEntity<StatusResponse> {
-        checkJwtAndRequestUsers(authHeader, login)
-
         log.info { "Processing change password request for user $login" }
         userService.changePassword(login, changeRequest)
 
         return ResponseEntity.ok()
             .body(StatusResponse(status = SystemResponseStatus.SUCCESS.name, description = "Password has been changed"))
-    }
-
-    private fun checkJwtAndRequestUsers(authHeader: String, login: String) {
-        val jwtToken = extractJwtTokenFromHeader(authHeader)
-        val jwtUser = jwtTokenHandler.getClaimFromToken(AuthClaims.LOGIN, jwtToken)
-        if (jwtUser.lowercase() != login.lowercase()) throw UsersDontMatchException("Other users can't be changed")
     }
 
     @Operation(summary = "Change user's role. Available only to the admin")
@@ -275,7 +261,6 @@ class UsersController(
     @Authorized(SystemRoles.ADMIN)
     @PutMapping("/{user}/role")
     fun changeUserRole(
-        jwtClaims: MutableMap<String, String>,
         @PathVariable("user") login: String,
         @RequestBody @Valid changeRoleRequest: ChangeRoleRequest
     ): ResponseEntity<StatusResponse> {

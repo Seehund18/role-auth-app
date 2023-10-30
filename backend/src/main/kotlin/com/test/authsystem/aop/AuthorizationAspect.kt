@@ -1,6 +1,8 @@
 package com.test.authsystem.aop
 
+import com.test.authsystem.constants.AuthClaims
 import com.test.authsystem.exception.AuthException
+import com.test.authsystem.exception.UsersDontMatchException
 import com.test.authsystem.service.AuthService
 import com.test.authsystem.util.extractJwtTokenFromHeader
 import mu.KLogger
@@ -20,15 +22,18 @@ class AuthorizationAspect(val authService: AuthService) {
 
     private val log: KLogger = KotlinLogging.logger {}
 
-    @Before("@annotation(authorized) && args(map,..)")
+    @Before("@annotation(authorized)")
     @Throws(Throwable::class)
-    fun authorizeRequest(joinPoint: JoinPoint, authorized: Authorized, map: MutableMap<String, String>) {
+    fun authorizeRequest(joinPoint: JoinPoint, authorized: Authorized) {
         log.info { "Authorizing request" }
         val minRequiredRole = authorized.minRole
 
         val jwtToken = extractJwtTokenFromHeader(getAuthHeader())
         val claimsMap = authService.authorizeRequest(jwtToken, minRequiredRole)
-        map.putAll(claimsMap)
+
+        if (authorized.verifyJwtAndRequestLogin) {
+            verifyJwtAndRequestLogin(joinPoint, claimsMap)
+        }
     }
 
     private fun getAuthHeader(): String {
@@ -40,4 +45,12 @@ class AuthorizationAspect(val authService: AuthService) {
         return authHeader ?: throw AuthException("No authorization header in the request")
     }
 
+    private fun verifyJwtAndRequestLogin(joinPoint: JoinPoint, claimsMap: Map<String, String>) {
+        val requestLogin = joinPoint.args[0]
+        if (requestLogin !is String ||
+            claimsMap[AuthClaims.LOGIN.claimName]?.lowercase() != requestLogin.lowercase()
+        ) {
+            throw UsersDontMatchException("Other users can't be changed or queried")
+        }
+    }
 }
